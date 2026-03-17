@@ -1,0 +1,20 @@
+<view class="container">
+  <view class="card">
+    <view class="title">今日健康打卡</view>
+    
+    <view class="form-group">
+      <text class="label">当前体温 (°C)</text>
+      <slider min="35" max="42" step="0.1" show-value value="{{temp}}" bindchange="tempChange" activeColor="#07c160" />
+    </view>
+
+    <view class="form-group">
+      <text class="label">健康状态</text>
+      <radio-group bindchange="statusChange" class="radio-group">
+        <label class="radio"><radio value="健康" checked="true" color="#07c160"/> 健康</label>
+        <label class="radio"><radio value="发热/感冒" color="#ff4d4f"/> 发热/感冒</label>
+      </radio-group>
+    </view>
+
+    <button class="submit-btn" bindtap="submitData">提交打卡</button>
+  </view>
+</view>

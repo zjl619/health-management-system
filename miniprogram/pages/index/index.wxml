@@ -1,0 +1,36 @@
+<scroll-view class="scrollarea" scroll-y type="list">
+  <view class="header">
+    <text class="greeting">保持健康，每一天！</text>
+    <button class="checkin-btn" bindtap="goCheckin">立即打卡</button>
+  </view>
+
+  <view class="stats-container">
+    <view class="stat-box">
+      <text class="stat-num">{{totalDays}}</text>
+      <text class="stat-label">总打卡(天)</text>
+    </view>
+    <view class="stat-box safe">
+      <text class="stat-num">{{safeDays}}</text>
+      <text class="stat-label">健康(天)</text>
+    </view>
+    <view class="stat-box warning">
+      <text class="stat-num">{{warningDays}}</text>
+      <text class="stat-label">异常(天)</text>
+    </view>
+  </view>
+
+  <view class="chart-card" wx:if="{{chartData.length > 0}}">
+    <view class="chart-title">近期体温趋势</view>
+    <view class="bar-chart">
+      <view class="bar-item" wx:for="{{chartData}}" wx:key="date">
+        <view class="bar-value">{{item.temp}}</view>
+        <view class="bar-bg">
+          <view class="bar-fill {{item.temp > 37.3 ? 'danger' : 'safe'}}" style="height: {{item.heightPercent}};"></view>
+        </view>
+        <view class="bar-date">{{item.shortDate}}</view>
+      </view>
+    </view>
+  </view>
+  
+  <view class="empty-tip" wx:else>暂无数据，请先打卡</view>
+</scroll-view>
