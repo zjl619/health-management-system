@@ -40,11 +40,11 @@ Page({
         isEdit: true,
         temp: existing.temp,
         status: existing.status,
-        exercise: existing.exercise ?? 0,
-        sleep: existing.sleep ?? 7,
-        water: existing.water ?? 8,
-        mood: existing.mood ?? '😊',
-        note: existing.note ?? '',
+        exercise: existing.exercise != null ? existing.exercise : 0,
+        sleep: existing.sleep != null ? existing.sleep : 7,
+        water: existing.water != null ? existing.water : 8,
+        mood: existing.mood != null ? existing.mood : '😊',
+        note: existing.note != null ? existing.note : '',
       });
     } else {
       this.setData({ todayStr: today, isEdit: false });
