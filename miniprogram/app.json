@@ -2,31 +2,22 @@
   "pages": [
     "pages/index/index",
     "pages/checkin/checkin",
+    "pages/calorie/calorie",
     "pages/history/history",
     "pages/stats/stats"
   ],
   "tabBar": {
+    "custom": true,
     "color": "#999999",
     "selectedColor": "#07c160",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
-      {
-        "pagePath": "pages/index/index",
-        "text": "首页"
-      },
-      {
-        "pagePath": "pages/checkin/checkin",
-        "text": "打卡"
-      },
-      {
-        "pagePath": "pages/history/history",
-        "text": "历史"
-      },
-      {
-        "pagePath": "pages/stats/stats",
-        "text": "统计"
-      }
+      { "pagePath": "pages/index/index",     "text": "首页" },
+      { "pagePath": "pages/checkin/checkin", "text": "打卡" },
+      { "pagePath": "pages/calorie/calorie", "text": "卡路里" },
+      { "pagePath": "pages/history/history", "text": "历史" },
+      { "pagePath": "pages/stats/stats",     "text": "统计" }
     ]
   },
   "window": {

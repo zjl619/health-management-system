@@ -14,6 +14,10 @@ Page({
   },
 
   onShow() {
+    wx.nextTick(() => {
+      const tabBar = this.getTabBar() as any;
+      if (tabBar && tabBar.data.selected !== 3) tabBar.setData({ selected: 3 });
+    });
     const now = new Date();
     this.setData({ year: now.getFullYear(), month: now.getMonth() + 1 }, () => {
       this.renderCalendar();

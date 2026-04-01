@@ -1,0 +1,190 @@
+<scroll-view class="scrollarea" scroll-y type="list" bindscrolltolower="onReachBottom" lower-threshold="80">
+
+  <!-- 顶部今日摘要 -->
+  <view class="summary-banner">
+    <view class="summary-title-row">
+      <text class="summary-title">今日饮食</text>
+      <text class="summary-date">{{todayStr}}</text>
+    </view>
+    <view class="macro-ring-row">
+      <view class="calorie-display">
+        <text class="cal-big">{{todayCalories}}</text>
+        <text class="cal-unit">kcal</text>
+        <text class="cal-sub">/ {{targetCalories}} 目标</text>
+      </view>
+      <view class="macro-bars">
+        <view class="macro-bar-item">
+          <view class="macro-label-row">
+            <text class="macro-dot protein-dot"></text>
+            <text class="macro-name">蛋白质</text>
+            <text class="macro-val">{{todayProtein}}g</text>
+          </view>
+          <view class="macro-bar-bg">
+            <view class="macro-bar-fill protein-fill" style="width:{{proteinPct}}%;"></view>
+          </view>
+        </view>
+        <view class="macro-bar-item">
+          <view class="macro-label-row">
+            <text class="macro-dot carbs-dot"></text>
+            <text class="macro-name">碳水化合物</text>
+            <text class="macro-val">{{todayCarbs}}g</text>
+          </view>
+          <view class="macro-bar-bg">
+            <view class="macro-bar-fill carbs-fill" style="width:{{carbsPct}}%;"></view>
+          </view>
+        </view>
+        <view class="macro-bar-item">
+          <view class="macro-label-row">
+            <text class="macro-dot fat-dot"></text>
+            <text class="macro-name">脂肪</text>
+            <text class="macro-val">{{todayFat}}g</text>
+          </view>
+          <view class="macro-bar-bg">
+            <view class="macro-bar-fill fat-fill" style="width:{{fatPct}}%;"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="calorie-bar-bg">
+      <view class="calorie-bar-fill {{todayCalories > targetCalories ? 'over' : 'ok'}}"
+        style="width:{{caloriePct}}%;"></view>
+    </view>
+    <text class="calorie-status">
+      {{todayCalories > targetCalories ? '⚠️ 已超出 ' + (todayCalories - targetCalories) + ' kcal' : '还剩 ' + (targetCalories - todayCalories) + ' kcal 空间'}}
+    </text>
+  </view>
+
+  <!-- 今日饮食记录 -->
+  <view class="meal-section" wx:if="{{todayEntries.length > 0}}">
+    <view class="meal-group" wx:for="{{mealGroups}}" wx:key="meal" wx:if="{{item.entries.length > 0}}">
+      <view class="meal-title">
+        <text class="meal-icon">{{item.icon}}</text>
+        <text class="meal-name">{{item.meal}}</text>
+        <text class="meal-cal">{{item.totalCal}} kcal</text>
+      </view>
+      <view class="diet-entry" wx:for="{{item.entries}}" wx:for-item="entry" wx:key="id">
+        <view class="entry-info">
+          <text class="entry-name">{{entry.foodName}}</text>
+          <text class="entry-detail">{{entry.grams}}g · 蛋白{{entry.protein}}g · 碳水{{entry.carbs}}g · 脂肪{{entry.fat}}g</text>
+        </view>
+        <view class="entry-right">
+          <text class="entry-cal">{{entry.calories}}</text>
+          <text class="entry-kcal">kcal</text>
+          <view class="entry-del" bindtap="deleteEntry" data-id="{{entry.id}}">×</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="no-record" wx:if="{{todayEntries.length === 0}}">
+    <text class="no-record-icon">🥗</text>
+    <text class="no-record-text">今日暂无饮食记录</text>
+    <text class="no-record-sub">搜索食物开始记录</text>
+  </view>
+
+  <!-- 分割线 -->
+  <view class="section-divider">
+    <text class="divider-text">添加食物</text>
+  </view>
+
+  <!-- 餐次选择 -->
+  <view class="meal-picker-row">
+    <view class="meal-chip {{currentMeal === item.val ? 'active' : ''}}"
+      wx:for="{{mealOptions}}" wx:key="val"
+      bindtap="selectMeal" data-val="{{item.val}}">
+      {{item.icon}} {{item.val}}
+    </view>
+  </view>
+
+  <!-- 搜索框 -->
+  <view class="search-box">
+    <text class="search-icon">🔍</text>
+    <input class="search-input" placeholder="搜索食物名称..." value="{{keyword}}"
+      bindinput="onSearch" confirm-type="search" />
+    <view class="search-clear" wx:if="{{keyword}}" bindtap="clearSearch">×</view>
+  </view>
+
+  <!-- 分类 -->
+  <scroll-view class="cat-scroll" scroll-x wx:if="{{!keyword}}">
+    <view class="cat-row">
+      <view class="cat-chip {{selectedCat === item ? 'active' : ''}}"
+        wx:for="{{categories}}" wx:key="*this"
+        bindtap="selectCat" data-cat="{{item}}">{{item}}</view>
+    </view>
+  </scroll-view>
+
+  <!-- 食物列表 -->
+  <view class="food-list">
+    <view class="food-item" wx:for="{{filteredFoods}}" wx:key="id"
+      bindtap="openFood" data-id="{{item.id}}">
+      <view class="food-item-left">
+        <view class="food-cat-tag">{{item.category}}</view>
+        <text class="food-name">{{item.name}}</text>
+        <text class="food-unit-hint">{{item.unit}}</text>
+      </view>
+      <view class="food-item-right">
+        <text class="food-cal-num">{{item.per100.calories}}</text>
+        <text class="food-cal-label">kcal/100g</text>
+        <view class="food-macros">
+          <text>蛋白{{item.per100.protein}}g</text>
+          <text>碳水{{item.per100.carbs}}g</text>
+          <text>脂肪{{item.per100.fat}}g</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="load-more" wx:if="{{hasMore}}">上滑加载更多...</view>
+  <view class="no-more" wx:elif="{{filteredFoods.length > 0}}">已显示全部 {{filteredFoods.length}} 种食物</view>
+
+  <view class="bottom-safe"></view>
+</scroll-view>
+
+<!-- 食物详情弹窗 -->
+<view class="modal-mask" wx:if="{{showModal}}" bindtap="closeModal">
+  <view class="modal-card" catchtap="noop">
+    <view class="modal-header">
+      <text class="modal-food-name">{{selectedFood.name}}</text>
+      <view class="modal-close" bindtap="closeModal">×</view>
+    </view>
+
+    <view class="modal-nutrition-row">
+      <view class="nutrition-chip calories-chip">
+        <text class="chip-num">{{calcResult.calories}}</text>
+        <text class="chip-unit">kcal</text>
+      </view>
+      <view class="nutrition-chip protein-chip">
+        <text class="chip-num">{{calcResult.protein}}g</text>
+        <text class="chip-unit">蛋白质</text>
+      </view>
+      <view class="nutrition-chip carbs-chip">
+        <text class="chip-num">{{calcResult.carbs}}g</text>
+        <text class="chip-unit">碳水</text>
+      </view>
+      <view class="nutrition-chip fat-chip">
+        <text class="chip-num">{{calcResult.fat}}g</text>
+        <text class="chip-unit">脂肪</text>
+      </view>
+    </view>
+
+    <view class="gram-section">
+      <view class="gram-label-row">
+        <text class="gram-label">食用量</text>
+        <text class="gram-val">{{inputGrams}} g</text>
+      </view>
+      <slider min="10" max="500" step="5" value="{{inputGrams}}"
+        bindchange="gramChange" activeColor="#ff7043"
+        backgroundColor="#eee" block-color="#ff7043" />
+      <view class="gram-presets">
+        <view class="gram-preset" bindtap="setGram" data-g="{{selectedFood.unitWeight}}">
+          {{selectedFood.unit}}
+        </view>
+        <view class="gram-preset" bindtap="setGram" data-g="50">50g</view>
+        <view class="gram-preset" bindtap="setGram" data-g="100">100g</view>
+        <view class="gram-preset" bindtap="setGram" data-g="200">200g</view>
+      </view>
+    </view>
+
+    <button class="add-btn" bindtap="addToDay">+ 添加到{{currentMeal}}</button>
+  </view>
+</view>

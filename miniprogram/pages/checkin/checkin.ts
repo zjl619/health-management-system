@@ -28,6 +28,10 @@ Page({
   },
 
   onShow() {
+    wx.nextTick(() => {
+      const tabBar = this.getTabBar() as any;
+      if (tabBar && tabBar.data.selected !== 1) tabBar.setData({ selected: 1 });
+    });
     const today = getTodayStr();
     const existing = getTodayRecord();
     if (existing) {

@@ -1,0 +1,295 @@
+page { background: #fff8f4; }
+.scrollarea {
+  height: calc(100vh - 112rpx - env(safe-area-inset-bottom));
+}
+.bottom-safe { height: 40rpx; }
+
+/* 顶部摘要 */
+.summary-banner {
+  background: linear-gradient(135deg, #ff7043 0%, #ff5722 100%);
+  padding: 36rpx 28rpx 28rpx;
+  border-bottom-left-radius: 40rpx;
+  border-bottom-right-radius: 40rpx;
+  box-shadow: 0 8rpx 30rpx rgba(255, 87, 34, 0.3);
+}
+
+.summary-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+.summary-title { font-size: 34rpx; font-weight: bold; color: #fff; }
+.summary-date { font-size: 22rpx; color: rgba(255,255,255,0.7); }
+
+.macro-ring-row {
+  display: flex;
+  gap: 24rpx;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+.calorie-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,255,255,0.18);
+  border-radius: 20rpx;
+  padding: 20rpx 24rpx;
+  flex-shrink: 0;
+  border: 2rpx solid rgba(255,255,255,0.3);
+}
+.cal-big { font-size: 52rpx; font-weight: 900; color: #fff; line-height: 1; }
+.cal-unit { font-size: 20rpx; color: rgba(255,255,255,0.8); margin-top: 4rpx; }
+.cal-sub { font-size: 18rpx; color: rgba(255,255,255,0.65); margin-top: 2rpx; }
+
+.macro-bars { flex: 1; }
+.macro-bar-item { margin-bottom: 14rpx; }
+.macro-label-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6rpx;
+}
+.macro-dot {
+  width: 12rpx; height: 12rpx; border-radius: 6rpx;
+  margin-right: 8rpx; flex-shrink: 0;
+}
+.protein-dot { background: #64b5f6; }
+.carbs-dot { background: #ffd54f; }
+.fat-dot { background: #ef9a9a; }
+.macro-name { font-size: 20rpx; color: rgba(255,255,255,0.85); flex: 1; }
+.macro-val { font-size: 20rpx; color: #fff; font-weight: bold; }
+.macro-bar-bg { height: 8rpx; background: rgba(255,255,255,0.25); border-radius: 4rpx; overflow: hidden; }
+.macro-bar-fill { height: 100%; border-radius: 4rpx; transition: width 0.5s ease; }
+.protein-fill { background: #64b5f6; }
+.carbs-fill { background: #ffd54f; }
+.fat-fill { background: #ef9a9a; }
+
+.calorie-bar-bg {
+  height: 10rpx; background: rgba(255,255,255,0.25);
+  border-radius: 5rpx; overflow: hidden; margin-bottom: 10rpx;
+}
+.calorie-bar-fill { height: 100%; border-radius: 5rpx; transition: width 0.5s ease; }
+.calorie-bar-fill.ok { background: #a5d6a7; }
+.calorie-bar-fill.over { background: #ef9a9a; }
+.calorie-status { font-size: 22rpx; color: rgba(255,255,255,0.9); }
+
+/* 今日记录 */
+.meal-section { padding: 24rpx 20rpx 0; }
+.meal-group { margin-bottom: 20rpx; }
+.meal-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+.meal-icon { font-size: 28rpx; margin-right: 10rpx; }
+.meal-name { font-size: 26rpx; font-weight: bold; color: #333; flex: 1; }
+.meal-cal { font-size: 22rpx; color: #ff7043; font-weight: bold; }
+
+.diet-entry {
+  background: #fff;
+  border-radius: 14rpx;
+  padding: 18rpx 16rpx;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10rpx;
+  box-shadow: 0 2rpx 10rpx rgba(255,87,34,0.08);
+}
+.entry-info { flex: 1; }
+.entry-name { display: block; font-size: 26rpx; font-weight: bold; color: #333; margin-bottom: 6rpx; }
+.entry-detail { display: block; font-size: 20rpx; color: #aaa; }
+.entry-right { display: flex; flex-direction: column; align-items: flex-end; position: relative; }
+.entry-cal { font-size: 32rpx; font-weight: bold; color: #ff7043; }
+.entry-kcal { font-size: 18rpx; color: #bbb; }
+.entry-del {
+  font-size: 32rpx; color: #ccc;
+  margin-top: 4rpx;
+  padding: 4rpx 8rpx;
+}
+
+.no-record {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 50rpx 0 20rpx;
+}
+.no-record-icon { font-size: 80rpx; margin-bottom: 16rpx; }
+.no-record-text { font-size: 28rpx; color: #aaa; font-weight: bold; margin-bottom: 8rpx; }
+.no-record-sub { font-size: 22rpx; color: #ccc; }
+
+/* 分割 */
+.section-divider {
+  display: flex;
+  align-items: center;
+  margin: 24rpx 20rpx 0;
+}
+.divider-text {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #555;
+  background: #fff8f4;
+  padding-right: 16rpx;
+}
+
+/* 餐次选择 */
+.meal-picker-row {
+  display: flex;
+  gap: 12rpx;
+  padding: 16rpx 20rpx;
+  overflow-x: auto;
+}
+.meal-chip {
+  flex-shrink: 0;
+  padding: 12rpx 24rpx;
+  border-radius: 30rpx;
+  font-size: 24rpx;
+  color: #888;
+  background: #fff;
+  border: 2rpx solid #eee;
+  white-space: nowrap;
+}
+.meal-chip.active {
+  background: #ff7043;
+  color: #fff;
+  border-color: #ff7043;
+  font-weight: bold;
+}
+
+/* 搜索 */
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  margin: 0 20rpx 12rpx;
+  border-radius: 40rpx;
+  padding: 16rpx 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.07);
+}
+.search-icon { font-size: 28rpx; margin-right: 12rpx; }
+.search-input { flex: 1; font-size: 26rpx; color: #333; }
+.search-clear { font-size: 36rpx; color: #ccc; padding: 0 8rpx; }
+
+/* 分类 */
+.cat-scroll { margin: 0 0 12rpx 20rpx; }
+.cat-row { display: flex; gap: 12rpx; padding-right: 20rpx; }
+.cat-chip {
+  flex-shrink: 0;
+  padding: 10rpx 24rpx;
+  border-radius: 30rpx;
+  font-size: 22rpx;
+  color: #666;
+  background: #fff;
+  border: 2rpx solid #eee;
+  white-space: nowrap;
+}
+.cat-chip.active { background: #fff1ee; color: #ff7043; border-color: #ff7043; font-weight: bold; }
+
+/* 食物列表 */
+.food-list { padding: 0 20rpx; }
+.food-item {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 12rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+}
+.food-item-left { flex: 1; }
+.food-cat-tag {
+  display: inline-block;
+  font-size: 18rpx;
+  color: #ff7043;
+  background: #fff1ee;
+  padding: 3rpx 12rpx;
+  border-radius: 10rpx;
+  margin-bottom: 8rpx;
+}
+.food-name { display: block; font-size: 28rpx; font-weight: bold; color: #333; margin-bottom: 4rpx; }
+.food-unit-hint { display: block; font-size: 20rpx; color: #aaa; }
+.food-item-right { text-align: right; }
+.food-cal-num { display: block; font-size: 36rpx; font-weight: bold; color: #ff7043; line-height: 1; }
+.food-cal-label { display: block; font-size: 18rpx; color: #bbb; margin-bottom: 8rpx; }
+.food-macros {
+  display: flex;
+  gap: 8rpx;
+  font-size: 17rpx;
+  color: #bbb;
+  justify-content: flex-end;
+}
+
+/* 弹窗 */
+.modal-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  bottom: 112rpx; /* 避开自定义 TabBar */
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: flex-end;
+  z-index: 1000;
+}
+.modal-card {
+  background: #fff;
+  border-radius: 36rpx 36rpx 0 0;
+  padding: 32rpx 28rpx calc(32rpx + env(safe-area-inset-bottom));
+  width: 100%;
+  box-sizing: border-box;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+.modal-food-name { font-size: 34rpx; font-weight: bold; color: #333; }
+.modal-close { font-size: 44rpx; color: #ccc; padding: 0 8rpx; }
+
+.modal-nutrition-row {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 28rpx;
+}
+.nutrition-chip {
+  flex: 1;
+  border-radius: 16rpx;
+  padding: 16rpx 8rpx;
+  text-align: center;
+}
+.calories-chip { background: #fff1ee; }
+.protein-chip { background: #e3f2fd; }
+.carbs-chip { background: #fffde7; }
+.fat-chip { background: #fce4ec; }
+.chip-num { display: block; font-size: 30rpx; font-weight: bold; color: #333; }
+.chip-unit { display: block; font-size: 18rpx; color: #999; margin-top: 4rpx; }
+
+.gram-section { margin-bottom: 24rpx; }
+.gram-label-row { display: flex; justify-content: space-between; margin-bottom: 12rpx; }
+.gram-label { font-size: 26rpx; color: #555; font-weight: bold; }
+.gram-val { font-size: 26rpx; color: #ff7043; font-weight: bold; }
+.gram-presets { display: flex; gap: 12rpx; margin-top: 12rpx; flex-wrap: wrap; }
+.gram-preset {
+  padding: 10rpx 20rpx;
+  background: #f5f5f5;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  color: #666;
+  border: 2rpx solid #eee;
+}
+
+.load-more, .no-more {
+  text-align: center;
+  font-size: 22rpx;
+  color: #ccc;
+  padding: 20rpx 0;
+}
+
+.add-btn {
+  background: linear-gradient(135deg, #ff7043, #ff5722);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: bold;
+  border-radius: 50rpx;
+  padding: 22rpx 0;
+  box-shadow: 0 8rpx 24rpx rgba(255, 87, 34, 0.35);
+}

@@ -1,4 +1,6 @@
 {
   "usingComponents": {},
-  "navigationBarTitleText": "健康打卡"
+  "navigationBarTitleText": "今日打卡",
+  "navigationBarBackgroundColor": "#07c160",
+  "navigationBarTextStyle": "white"
 }

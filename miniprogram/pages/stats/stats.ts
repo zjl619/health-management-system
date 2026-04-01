@@ -21,6 +21,10 @@ Page({
 
   onShow() {
     this.loadStats();
+    wx.nextTick(() => {
+      const tabBar = this.getTabBar() as any;
+      if (tabBar && tabBar.data.selected !== 4) tabBar.setData({ selected: 4 });
+    });
   },
 
   loadStats() {
