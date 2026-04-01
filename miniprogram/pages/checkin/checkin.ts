@@ -1,48 +1,85 @@
+import { getTodayStr, getTodayRecord, upsertRecord, HealthRecord } from '../../utils/storage';
+
 Page({
   data: {
+    todayStr: '',
+    isEdit: false,
     temp: 36.5,
-    status: '健康'
+    status: '健康',
+    exercise: 30,
+    sleep: 7.5,
+    water: 8,
+    mood: '😊',
+    note: '',
+    waterCups: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    statusOptions: [
+      { val: '健康', emoji: '💚' },
+      { val: '发热/感冒', emoji: '🤒' },
+      { val: '头痛/疲劳', emoji: '😵' },
+      { val: '其他不适', emoji: '😟' },
+    ],
+    moodOptions: [
+      { val: '😄', label: '开心' },
+      { val: '😊', label: '平静' },
+      { val: '😐', label: '一般' },
+      { val: '😔', label: '低落' },
+      { val: '😤', label: '烦躁' },
+    ],
   },
-  tempChange(e:any) {
-    this.setData({ temp: e.detail.value });
-  },
-  statusChange(e:any) {
-    this.setData({ status: e.detail.value });
-  },
-  submitData() {
-    // 获取当前日期
-    const now = new Date();
-    const dateStr = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
-    
-    // 构造一条打卡记录
-    const newRecord = {
-      date: dateStr,
-      temp: this.data.temp,
-      status: this.data.status,
-      timestamp: now.getTime()
-    };
 
-    // 获取本地已有的历史数据（如果没有，默认为空数组）
-    let history = wx.getStorageSync('healthRecords') || [];
-    
-    // 检查今天是否已经打卡（防止重复打卡，如果不需要限制可以删掉这一段）
-    const todayIndex = history.findIndex((item: any) => item.date === dateStr);
-    if (todayIndex !== -1) {
-      history[todayIndex] = newRecord; // 覆盖今日记录
+  onShow() {
+    const today = getTodayStr();
+    const existing = getTodayRecord();
+    if (existing) {
+      this.setData({
+        todayStr: today,
+        isEdit: true,
+        temp: existing.temp,
+        status: existing.status,
+        exercise: existing.exercise ?? 0,
+        sleep: existing.sleep ?? 7,
+        water: existing.water ?? 8,
+        mood: existing.mood ?? '😊',
+        note: existing.note ?? '',
+      });
     } else {
-      history.push(newRecord); // 追加新记录
+      this.setData({ todayStr: today, isEdit: false });
     }
+  },
 
-    // 保存回本地缓存
-    wx.setStorageSync('healthRecords', history);
+  tempChange(e: any) { this.setData({ temp: e.detail.value }); },
+  exerciseChange(e: any) { this.setData({ exercise: e.detail.value }); },
+  sleepChange(e: any) { this.setData({ sleep: e.detail.value }); },
+  noteChange(e: any) { this.setData({ note: e.detail.value }); },
+
+  selectStatus(e: any) { this.setData({ status: e.currentTarget.dataset.val }); },
+  selectMood(e: any) { this.setData({ mood: e.currentTarget.dataset.val }); },
+  setWater(e: any) { this.setData({ water: e.currentTarget.dataset.val }); },
+
+  submitData() {
+    const { temp, status, exercise, sleep, water, mood, note } = this.data;
+    const now = new Date();
+    const record: HealthRecord = {
+      date: getTodayStr(),
+      timestamp: now.getTime(),
+      temp,
+      status,
+      exercise,
+      sleep,
+      water,
+      mood,
+      note,
+    };
+    upsertRecord(record);
 
     wx.showToast({
-      title: '打卡成功',
+      title: this.data.isEdit ? '已更新' : '打卡成功 🎉',
       icon: 'success',
       duration: 1500,
-      success: () => {
-        setTimeout(() => { wx.navigateBack(); }, 1500); // 延迟返回首页
-      }
     });
-  }
-})
+
+    setTimeout(() => {
+      wx.switchTab({ url: '/pages/index/index' });
+    }, 1500);
+  },
+});

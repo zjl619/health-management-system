@@ -1,36 +1,95 @@
 <scroll-view class="scrollarea" scroll-y type="list">
-  <view class="header">
-    <text class="greeting">保持健康，每一天！</text>
-    <button class="checkin-btn" bindtap="goCheckin">立即打卡</button>
+
+  <!-- 顶部 Banner -->
+  <view class="banner">
+    <view class="banner-top">
+      <view class="user-info">
+        <view class="avatar">{{userEmoji}}</view>
+        <view class="user-text">
+          <text class="user-name">健康达人</text>
+          <text class="user-sub">{{todayStr}} · {{weekDay}}</text>
+        </view>
+      </view>
+      <view class="streak-badge {{streak > 0 ? 'active' : ''}}">
+        <text class="streak-fire">🔥</text>
+        <text class="streak-num">{{streak}}</text>
+        <text class="streak-label">天</text>
+      </view>
+    </view>
+
+    <!-- 今日状态卡 -->
+    <view class="today-card {{checkedToday ? 'checked' : 'unchecked'}}">
+      <view class="today-icon">{{checkedToday ? '✅' : '📋'}}</view>
+      <view class="today-text">
+        <text class="today-title">{{checkedToday ? '今日已打卡' : '今日尚未打卡'}}</text>
+        <text class="today-sub">{{checkedToday ? todayBrief : '记录每天的健康状态吧'}}</text>
+      </view>
+      <view class="today-btn" bindtap="goCheckin">
+        <text>{{checkedToday ? '修改' : '打卡'}}</text>
+      </view>
+    </view>
   </view>
 
-  <view class="stats-container">
-    <view class="stat-box">
+  <!-- 统计数字区 -->
+  <view class="stats-row">
+    <view class="stat-card">
+      <text class="stat-icon">📅</text>
       <text class="stat-num">{{totalDays}}</text>
-      <text class="stat-label">总打卡(天)</text>
+      <text class="stat-label">总打卡</text>
     </view>
-    <view class="stat-box safe">
+    <view class="stat-card green">
+      <text class="stat-icon">💚</text>
       <text class="stat-num">{{safeDays}}</text>
-      <text class="stat-label">健康(天)</text>
+      <text class="stat-label">健康天</text>
     </view>
-    <view class="stat-box warning">
+    <view class="stat-card red">
+      <text class="stat-icon">🌡️</text>
       <text class="stat-num">{{warningDays}}</text>
-      <text class="stat-label">异常(天)</text>
+      <text class="stat-label">异常天</text>
+    </view>
+    <view class="stat-card blue">
+      <text class="stat-icon">🔥</text>
+      <text class="stat-num">{{streak}}</text>
+      <text class="stat-label">连续天</text>
     </view>
   </view>
 
-  <view class="chart-card" wx:if="{{chartData.length > 0}}">
-    <view class="chart-title">近期体温趋势</view>
+  <!-- 本周打卡进度 -->
+  <view class="section-card">
+    <view class="section-title">本周打卡</view>
+    <view class="week-row">
+      <view class="week-item {{item.checked ? 'done' : (item.isPast ? 'miss' : 'future')}}"
+        wx:for="{{weekData}}" wx:key="label">
+        <text class="week-dot">{{item.checked ? '✓' : (item.isPast ? '○' : '·')}}</text>
+        <text class="week-label">{{item.label}}</text>
+      </view>
+    </view>
+    <view class="week-progress-bg">
+      <view class="week-progress-fill" style="width: {{weekPercent}}%;"></view>
+    </view>
+    <text class="week-tip">本周已打卡 {{weekChecked}}/7 天</text>
+  </view>
+
+  <!-- 近期体温趋势 -->
+  <view class="section-card" wx:if="{{chartData.length > 0}}">
+    <view class="section-title">近期体温趋势</view>
     <view class="bar-chart">
       <view class="bar-item" wx:for="{{chartData}}" wx:key="date">
         <view class="bar-value">{{item.temp}}</view>
         <view class="bar-bg">
-          <view class="bar-fill {{item.temp > 37.3 ? 'danger' : 'safe'}}" style="height: {{item.heightPercent}};"></view>
+          <view class="bar-fill {{item.temp > 37.3 ? 'danger' : 'safe'}}"
+            style="height: {{item.heightPercent}};"></view>
         </view>
         <view class="bar-date">{{item.shortDate}}</view>
       </view>
     </view>
   </view>
-  
-  <view class="empty-tip" wx:else>暂无数据，请先打卡</view>
+
+  <!-- 健康提示 -->
+  <view class="section-card tip-card">
+    <view class="section-title">💡 今日健康提示</view>
+    <text class="tip-text">{{healthTip}}</text>
+  </view>
+
+  <view class="bottom-safe"></view>
 </scroll-view>

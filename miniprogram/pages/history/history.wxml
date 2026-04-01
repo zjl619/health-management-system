@@ -1,0 +1,84 @@
+<scroll-view class="scrollarea" scroll-y type="list">
+
+  <!-- 月份切换 -->
+  <view class="month-nav">
+    <view class="month-arrow" bindtap="prevMonth">‹</view>
+    <text class="month-title">{{year}} 年 {{month}} 月</text>
+    <view class="month-arrow" bindtap="nextMonth">›</view>
+  </view>
+
+  <!-- 日历 -->
+  <view class="calendar-card">
+    <view class="week-header">
+      <text wx:for="{{weekHeaders}}" wx:key="*this" class="week-head">{{item}}</text>
+    </view>
+    <view class="calendar-grid">
+      <!-- 占位格 -->
+      <view class="cal-day empty" wx:for="{{emptyDays}}" wx:key="*this"></view>
+      <!-- 日期格 -->
+      <view class="cal-day {{item.today ? 'today' : ''}} {{item.status === '健康' ? 'ok' : (item.status ? 'warn' : (item.hasRecord ? 'has' : ''))}} {{selectedDay === item.day ? 'selected' : ''}}"
+        wx:for="{{calDays}}" wx:key="day"
+        bindtap="selectDay" data-day="{{item.day}}">
+        <text class="cal-day-num">{{item.day}}</text>
+        <view class="cal-dot" wx:if="{{item.hasRecord}}"></view>
+      </view>
+    </view>
+    <!-- 图例 -->
+    <view class="legend">
+      <view class="legend-item"><view class="legend-dot green"></view><text>健康</text></view>
+      <view class="legend-item"><view class="legend-dot red"></view><text>异常</text></view>
+      <view class="legend-item"><view class="legend-dot today-dot"></view><text>今天</text></view>
+    </view>
+  </view>
+
+  <!-- 记录列表 -->
+  <view class="list-header">
+    <text class="list-title">
+      {{selectedDay ? month + '月' + selectedDay + '日记录' : month + '月全部记录'}}
+    </text>
+    <text class="list-count">共 {{displayRecords.length}} 条</text>
+  </view>
+
+  <view wx:if="{{displayRecords.length === 0}}" class="empty-tip">
+    <text class="empty-icon">📭</text>
+    <text class="empty-text">{{selectedDay ? '该日未打卡' : '本月暂无记录'}}</text>
+  </view>
+
+  <view class="record-item" wx:for="{{displayRecords}}" wx:key="date">
+    <view class="record-header">
+      <view class="record-date-area">
+        <text class="record-date">{{item.date}}</text>
+        <view class="record-status-tag {{item.status === '健康' ? 'green-tag' : 'red-tag'}}">
+          {{item.status}}
+        </view>
+      </view>
+      <view class="record-mood">{{item.mood}}</view>
+    </view>
+    <view class="record-metrics">
+      <view class="metric">
+        <text class="metric-label">体温</text>
+        <text class="metric-val {{item.temp > 37.3 ? 'danger' : ''}}">{{item.temp}}°C</text>
+      </view>
+      <view class="metric">
+        <text class="metric-label">运动</text>
+        <text class="metric-val">{{item.exercise}}分</text>
+      </view>
+      <view class="metric">
+        <text class="metric-label">睡眠</text>
+        <text class="metric-val">{{item.sleep}}h</text>
+      </view>
+      <view class="metric">
+        <text class="metric-label">饮水</text>
+        <text class="metric-val">{{item.water}}杯</text>
+      </view>
+    </view>
+    <view class="record-note" wx:if="{{item.note}}">
+      <text class="note-text">📝 {{item.note}}</text>
+    </view>
+    <view class="record-actions">
+      <view class="del-btn" bindtap="deleteRecord" data-date="{{item.date}}">删除</view>
+    </view>
+  </view>
+
+  <view class="bottom-safe"></view>
+</scroll-view>

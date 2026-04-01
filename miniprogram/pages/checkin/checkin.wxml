@@ -1,20 +1,108 @@
-<view class="container">
-  <view class="card">
-    <view class="title">今日健康打卡</view>
-    
-    <view class="form-group">
-      <text class="label">当前体温 (°C)</text>
-      <slider min="35" max="42" step="0.1" show-value value="{{temp}}" bindchange="tempChange" activeColor="#07c160" />
-    </view>
-
-    <view class="form-group">
-      <text class="label">健康状态</text>
-      <radio-group bindchange="statusChange" class="radio-group">
-        <label class="radio"><radio value="健康" checked="true" color="#07c160"/> 健康</label>
-        <label class="radio"><radio value="发热/感冒" color="#ff4d4f"/> 发热/感冒</label>
-      </radio-group>
-    </view>
-
-    <button class="submit-btn" bindtap="submitData">提交打卡</button>
+<scroll-view class="scrollarea" scroll-y type="list">
+  <view class="page-header">
+    <text class="page-title">{{isEdit ? '修改今日打卡' : '今日健康打卡'}}</text>
+    <text class="page-date">{{todayStr}}</text>
   </view>
-</view>
+
+  <!-- 体温 -->
+  <view class="form-card">
+    <view class="card-title">🌡️ 体温</view>
+    <view class="temp-display">
+      <text class="temp-num {{temp > 37.3 ? 'danger' : 'normal'}}">{{temp}}°C</text>
+      <text class="temp-status {{temp > 37.3 ? 'danger-tag' : 'normal-tag'}}">
+        {{temp > 37.3 ? '偏高' : (temp < 36.1 ? '偏低' : '正常')}}
+      </text>
+    </view>
+    <slider min="35" max="42" step="0.1" value="{{temp}}"
+      bindchange="tempChange" activeColor="#07c160"
+      backgroundColor="#eee" block-color="#07c160" />
+    <view class="slider-labels">
+      <text>35°C</text><text>正常: 36.1~37.3</text><text>42°C</text>
+    </view>
+  </view>
+
+  <!-- 健康状态 -->
+  <view class="form-card">
+    <view class="card-title">💊 健康状态</view>
+    <view class="status-row">
+      <view class="status-item {{status === item.val ? 'selected' : ''}}"
+        wx:for="{{statusOptions}}" wx:key="val"
+        bindtap="selectStatus" data-val="{{item.val}}">
+        <text class="status-emoji">{{item.emoji}}</text>
+        <text class="status-text">{{item.val}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 运动时长 -->
+  <view class="form-card">
+    <view class="card-title-row">
+      <text class="card-title">🏃 运动时长</text>
+      <text class="card-value">{{exercise}} 分钟</text>
+    </view>
+    <slider min="0" max="180" step="5" value="{{exercise}}"
+      bindchange="exerciseChange" activeColor="#1890ff"
+      backgroundColor="#eee" />
+    <view class="slider-labels">
+      <text>0</text><text>建议≥30分钟</text><text>180分钟</text>
+    </view>
+  </view>
+
+  <!-- 睡眠时长 -->
+  <view class="form-card">
+    <view class="card-title-row">
+      <text class="card-title">😴 睡眠时长</text>
+      <text class="card-value">{{sleep}} 小时</text>
+    </view>
+    <slider min="0" max="12" step="0.5" value="{{sleep}}"
+      bindchange="sleepChange" activeColor="#722ed1"
+      backgroundColor="#eee" />
+    <view class="slider-labels">
+      <text>0</text><text>建议7~9小时</text><text>12小时</text>
+    </view>
+  </view>
+
+  <!-- 饮水量 -->
+  <view class="form-card">
+    <view class="card-title-row">
+      <text class="card-title">💧 饮水量</text>
+      <text class="card-value">{{water}} 杯</text>
+    </view>
+    <view class="water-row">
+      <view class="water-cup {{index < water ? 'filled' : 'empty'}}"
+        wx:for="{{waterCups}}" wx:key="*this"
+        bindtap="setWater" data-val="{{index + 1}}">💧</view>
+    </view>
+    <text class="water-tip">点击水杯设置饮水量（建议8杯）</text>
+  </view>
+
+  <!-- 今日心情 -->
+  <view class="form-card">
+    <view class="card-title">😊 今日心情</view>
+    <view class="mood-row">
+      <view class="mood-item {{mood === item.val ? 'selected' : ''}}"
+        wx:for="{{moodOptions}}" wx:key="val"
+        bindtap="selectMood" data-val="{{item.val}}">
+        <text class="mood-emoji">{{item.val}}</text>
+        <text class="mood-label">{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 备注 -->
+  <view class="form-card">
+    <view class="card-title">📝 备注</view>
+    <textarea class="note-input" placeholder="记录今天的感受或症状..."
+      value="{{note}}" bindinput="noteChange" maxlength="200" />
+    <text class="note-count">{{note.length}}/200</text>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-area">
+    <button class="submit-btn" bindtap="submitData">
+      {{isEdit ? '更新打卡' : '完成打卡 ✓'}}
+    </button>
+  </view>
+
+  <view class="bottom-safe"></view>
+</scroll-view>

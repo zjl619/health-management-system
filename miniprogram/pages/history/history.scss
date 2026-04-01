@@ -1,0 +1,169 @@
+page { background: #f4f5f9; }
+.scrollarea { height: 100vh; }
+.bottom-safe { height: 40rpx; }
+
+/* 月份导航 */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 40rpx;
+  background: #fff;
+}
+.month-title { font-size: 32rpx; font-weight: bold; color: #333; }
+.month-arrow {
+  font-size: 48rpx;
+  color: #07c160;
+  width: 60rpx;
+  text-align: center;
+  font-weight: 300;
+}
+
+/* 日历卡 */
+.calendar-card {
+  background: #fff;
+  margin: 0 0 24rpx;
+  padding: 0 20rpx 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.week-header {
+  display: flex;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.week-head {
+  flex: 1;
+  text-align: center;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.calendar-grid {
+  display: flex;
+  flex-wrap: wrap;
+  padding-top: 8rpx;
+}
+
+.cal-day {
+  width: 14.28%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12rpx 0;
+  position: relative;
+  border-radius: 12rpx;
+}
+.cal-day.empty { pointer-events: none; }
+
+.cal-day-num {
+  font-size: 26rpx;
+  color: #333;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 60rpx;
+  text-align: center;
+}
+
+/* 状态着色 */
+.cal-day.ok .cal-day-num { background: #e8f8ef; color: #07c160; font-weight: bold; }
+.cal-day.warn .cal-day-num { background: #fff1f0; color: #ff4d4f; font-weight: bold; }
+.cal-day.today .cal-day-num { border: 2rpx solid #07c160; }
+.cal-day.selected .cal-day-num { background: #07c160; color: #fff !important; }
+
+.cal-dot {
+  width: 8rpx; height: 8rpx;
+  border-radius: 4rpx;
+  background: #07c160;
+  margin-top: 4rpx;
+}
+.cal-day.warn .cal-dot { background: #ff4d4f; }
+
+/* 图例 */
+.legend {
+  display: flex;
+  padding-top: 16rpx;
+  gap: 30rpx;
+  justify-content: flex-end;
+}
+.legend-item { display: flex; align-items: center; gap: 8rpx; font-size: 20rpx; color: #999; }
+.legend-dot {
+  width: 16rpx; height: 16rpx; border-radius: 8rpx;
+}
+.legend-dot.green { background: #07c160; }
+.legend-dot.red { background: #ff4d4f; }
+.legend-dot.today-dot { border: 2rpx solid #07c160; background: transparent; }
+
+/* 列表 */
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24rpx 12rpx;
+}
+.list-title { font-size: 28rpx; font-weight: bold; color: #333; }
+.list-count { font-size: 22rpx; color: #999; }
+
+.empty-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx;
+  color: #bbb;
+}
+.empty-icon { font-size: 80rpx; margin-bottom: 16rpx; }
+.empty-text { font-size: 26rpx; }
+
+/* 记录卡片 */
+.record-item {
+  background: #fff;
+  margin: 0 20rpx 20rpx;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+}
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+.record-date-area { display: flex; align-items: center; gap: 16rpx; }
+.record-date { font-size: 26rpx; font-weight: bold; color: #333; }
+.record-status-tag {
+  font-size: 20rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 20rpx;
+  font-weight: bold;
+}
+.green-tag { background: #e8f8ef; color: #07c160; }
+.red-tag { background: #fff1f0; color: #ff4d4f; }
+.record-mood { font-size: 44rpx; }
+
+.record-metrics {
+  display: flex;
+  background: #f9f9f9;
+  border-radius: 12rpx;
+  padding: 16rpx;
+  margin-bottom: 12rpx;
+}
+.metric { flex: 1; text-align: center; }
+.metric-label { display: block; font-size: 20rpx; color: #999; margin-bottom: 6rpx; }
+.metric-val { display: block; font-size: 26rpx; font-weight: bold; color: #333; }
+.metric-val.danger { color: #ff4d4f; }
+
+.record-note { margin-bottom: 12rpx; }
+.note-text { font-size: 24rpx; color: #666; line-height: 1.6; }
+
+.record-actions { display: flex; justify-content: flex-end; }
+.del-btn {
+  font-size: 22rpx;
+  color: #ff4d4f;
+  padding: 8rpx 20rpx;
+  border: 1rpx solid #ffccc7;
+  border-radius: 20rpx;
+}

@@ -1,0 +1,148 @@
+page { background: #f4f5f9; }
+.scrollarea { height: 100vh; }
+.bottom-safe { height: 40rpx; }
+
+/* 健康评分 banner */
+.score-banner {
+  background: linear-gradient(135deg, #07c160, #0aaa52);
+  margin-bottom: 0;
+  padding: 40rpx 30rpx;
+  display: flex;
+  align-items: center;
+  gap: 30rpx;
+}
+.score-circle {
+  width: 140rpx; height: 140rpx;
+  border-radius: 70rpx;
+  background: rgba(255,255,255,0.2);
+  border: 4rpx solid rgba(255,255,255,0.5);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.score-num { font-size: 56rpx; font-weight: bold; color: #fff; line-height: 1; }
+.score-label { font-size: 20rpx; color: rgba(255,255,255,0.8); margin-top: 4rpx; }
+.score-info { flex: 1; }
+.score-title { display: block; font-size: 30rpx; font-weight: bold; color: #fff; margin-bottom: 8rpx; }
+.score-sub { display: block; font-size: 22rpx; color: rgba(255,255,255,0.75); margin-bottom: 16rpx; }
+.score-bar-bg { height: 12rpx; background: rgba(255,255,255,0.3); border-radius: 6rpx; overflow: hidden; }
+.score-bar-fill { height: 100%; background: #fff; border-radius: 6rpx; transition: width 0.5s ease; }
+
+/* 通用卡片 */
+.section-card {
+  background: #fff;
+  margin: 24rpx 20rpx 0;
+  border-radius: 20rpx;
+  padding: 28rpx 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.05);
+}
+.section-title { font-size: 28rpx; font-weight: bold; color: #333; margin-bottom: 20rpx; display: block; }
+
+/* 成就徽章 */
+.badge-row { display: flex; justify-content: space-between; margin-bottom: 16rpx; }
+.badge-item {
+  display: flex; flex-direction: column; align-items: center;
+  flex: 1; padding: 16rpx 4rpx;
+  border-radius: 16rpx;
+  border: 2rpx solid #eee;
+  background: #fafafa;
+  margin: 0 6rpx;
+  opacity: 0.4;
+}
+.badge-item.unlocked {
+  opacity: 1;
+  border-color: #ffd666;
+  background: linear-gradient(180deg, #fffbf0, #fff9e6);
+  box-shadow: 0 2rpx 8rpx rgba(255,214,102,0.3);
+}
+.badge-icon { font-size: 48rpx; margin-bottom: 8rpx; }
+.badge-name { font-size: 22rpx; font-weight: bold; color: #333; }
+.badge-desc { font-size: 18rpx; color: #999; margin-top: 4rpx; }
+.streak-progress { text-align: center; }
+.streak-hint { font-size: 22rpx; color: #999; }
+
+/* 体温柱状图 */
+.line-chart-wrap { display: flex; }
+.line-y-labels {
+  display: flex; flex-direction: column; justify-content: space-between;
+  width: 60rpx; padding: 0 8rpx 30rpx 0;
+  font-size: 18rpx; color: #ccc;
+  text-align: right;
+}
+.line-chart { flex: 1; }
+.line-chart-bars {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  height: 180rpx;
+}
+.line-bar-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.line-bar-bg {
+  width: 30rpx; height: 140rpx;
+  background: #eee; border-radius: 15rpx;
+  position: relative; overflow: hidden;
+  margin-bottom: 8rpx;
+}
+.line-bar-fill {
+  position: absolute; bottom: 0; width: 100%;
+  border-radius: 15rpx; transition: height 0.5s ease;
+}
+.line-bar-fill.safe { background: linear-gradient(180deg, #52e075, #07c160); }
+.line-bar-fill.danger { background: linear-gradient(180deg, #ff7875, #ff4d4f); }
+.line-bar-val { font-size: 18rpx; color: #666; }
+.line-bar-date { font-size: 18rpx; color: #999; }
+
+.chart-legend { display: flex; gap: 24rpx; margin-top: 12rpx; }
+.legend-item { display: flex; align-items: center; gap: 8rpx; font-size: 20rpx; color: #999; }
+.dot { width: 16rpx; height: 16rpx; border-radius: 8rpx; }
+.safe-dot { background: #07c160; }
+.danger-dot { background: #ff4d4f; }
+
+/* 周均值 */
+.avg-row { display: flex; gap: 16rpx; }
+.avg-card {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center;
+  background: #f9f9f9; border-radius: 16rpx;
+  padding: 20rpx 12rpx;
+}
+.avg-icon { font-size: 40rpx; margin-bottom: 8rpx; }
+.avg-num { font-size: 40rpx; font-weight: bold; color: #333; line-height: 1; }
+.avg-unit { font-size: 18rpx; color: #999; margin-bottom: 4rpx; }
+.avg-label { font-size: 20rpx; color: #666; margin-bottom: 12rpx; }
+.avg-bar-bg { width: 100%; height: 8rpx; background: #e0e0e0; border-radius: 4rpx; overflow: hidden; margin-bottom: 8rpx; }
+.avg-bar-fill { height: 100%; border-radius: 4rpx; transition: width 0.5s ease; }
+.avg-bar-fill.blue { background: #1890ff; }
+.avg-bar-fill.purple { background: #722ed1; }
+.avg-bar-fill.cyan { background: #13c2c2; }
+.avg-tip { font-size: 18rpx; color: #07c160; text-align: center; }
+
+/* 心情分布 */
+.mood-stats-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  height: 160rpx;
+}
+.mood-stat-item {
+  display: flex; flex-direction: column; align-items: center;
+  flex: 1;
+}
+.mood-big { font-size: 40rpx; margin-bottom: 8rpx; }
+.mood-count-bar-bg {
+  width: 28rpx; height: 80rpx;
+  background: #eee; border-radius: 14rpx;
+  position: relative; overflow: hidden; margin-bottom: 6rpx;
+  display: flex; align-items: flex-end;
+}
+.mood-count-bar-fill {
+  width: 100%; background: linear-gradient(180deg, #ffd666, #fa8c16);
+  border-radius: 14rpx; transition: height 0.5s ease;
+}
+.mood-count-num { font-size: 20rpx; color: #666; }
+
+/* 建议 */
+.advice-card { background: linear-gradient(135deg, #f0fff5, #e8f8ef); }
+.advice-item { display: flex; margin-bottom: 16rpx; align-items: flex-start; }
+.advice-dot { color: #07c160; font-size: 32rpx; margin-right: 12rpx; line-height: 1.4; }
+.advice-text { font-size: 26rpx; color: #555; line-height: 1.7; flex: 1; }
