@@ -1,4 +1,5 @@
-import { getRecords, deleteRecord, getMonthData, HealthRecord } from '../../utils/storage';
+import { HealthRecord } from '../../models/health';
+import * as healthService from '../../services/healthService';
 
 const WEEK_HEADERS = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -38,52 +39,56 @@ Page({
     this.setData({ year, month, selectedDay: 0 }, () => this.renderCalendar());
   },
 
-  renderCalendar() {
-    const { year, month } = this.data;
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getDate().toString().padStart(2,'0')}`;
+  async renderCalendar() {
+    try {
+      const { year, month } = this.data;
+      const today = new Date();
+      const todayStr = healthService.formatDate(today);
 
-    // 该月第一天是星期几（0=日）
-    const firstDay = new Date(year, month - 1, 1).getDay();
-    const monthData = getMonthData(year, month);
+      const firstDay = new Date(year, month - 1, 1).getDay();
+      const monthData = await healthService.getMonthData(year, month);
 
-    const emptyDays = Array.from({ length: firstDay }, (_, i) => i);
-    const calDays = monthData.map(d => {
-      const dateStr = `${year}-${month.toString().padStart(2,'0')}-${d.day.toString().padStart(2,'0')}`;
-      return {
-        day: d.day,
-        status: d.status,
-        hasRecord: !!d.status,
-        today: dateStr === todayStr,
-      };
-    });
+      const emptyDays = Array.from({ length: firstDay }, (_, i) => i);
+      const calDays = monthData.map(d => {
+        const dateStr = `${year}-${month.toString().padStart(2, '0')}-${d.day.toString().padStart(2, '0')}`;
+        return {
+          day: d.day,
+          status: d.status,
+          hasRecord: !!d.status,
+          today: dateStr === todayStr,
+        };
+      });
 
-    this.setData({ emptyDays, calDays });
-    this.updateList();
+      this.setData({ emptyDays, calDays });
+      await this._updateList();
+    } catch (err) {
+      console.error('日历数据加载失败', err);
+    }
   },
 
   selectDay(e: any) {
     const day = e.currentTarget.dataset.day;
-    const calDay = this.data.calDays.find((d: any) => d.day === day);
-    if (!calDay || !calDay.hasRecord) {
-      // 未打卡日：也允许点击（显示空）
-    }
     const newDay = this.data.selectedDay === day ? 0 : day;
-    this.setData({ selectedDay: newDay }, () => this.updateList());
+    this.setData({ selectedDay: newDay }, () => this._updateList());
   },
 
-  updateList() {
-    const { year, month, selectedDay } = this.data;
-    const prefix = `${year}-${month.toString().padStart(2, '0')}`;
-    let records = getRecords()
-      .filter(r => r.date.startsWith(prefix))
-      .reverse();
+  async _updateList() {
+    try {
+      const { year, month, selectedDay } = this.data;
+      const prefix = `${year}-${month.toString().padStart(2, '0')}`;
+      const allRecords = await healthService.getRecords();
+      let records = allRecords
+        .filter(r => r.date.startsWith(prefix))
+        .reverse();
 
-    if (selectedDay) {
-      const dayStr = selectedDay.toString().padStart(2, '0');
-      records = records.filter(r => r.date === `${prefix}-${dayStr}`);
+      if (selectedDay) {
+        const dayStr = selectedDay.toString().padStart(2, '0');
+        records = records.filter(r => r.date === `${prefix}-${dayStr}`);
+      }
+      this.setData({ displayRecords: records });
+    } catch (err) {
+      console.error('记录列表加载失败', err);
     }
-    this.setData({ displayRecords: records });
   },
 
   deleteRecord(e: any) {
@@ -91,11 +96,15 @@ Page({
     wx.showModal({
       title: '确认删除',
       content: `删除 ${date} 的打卡记录？`,
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          deleteRecord(date);
-          this.renderCalendar();
-          wx.showToast({ title: '已删除', icon: 'success' });
+          try {
+            await healthService.deleteRecord(date);
+            await this.renderCalendar();
+            wx.showToast({ title: '已删除', icon: 'success' });
+          } catch (err) {
+            wx.showToast({ title: '删除失败', icon: 'error' });
+          }
         }
       }
     });

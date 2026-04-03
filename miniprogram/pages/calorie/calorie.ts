@@ -1,8 +1,7 @@
-import {
-  FOOD_DB, FOOD_CATEGORIES, FoodItem,
-  getDietRecords, addDietEntry, deleteDietEntry, calcNutrition, DietEntry
-} from '../../utils/foodData';
-import { getTodayStr } from '../../utils/storage';
+import { FoodItem, DietEntry } from '../../models/diet';
+import { FOOD_DB, FOOD_CATEGORIES } from '../../config/food';
+import * as dietService from '../../services/dietService';
+import { getTodayStr } from '../../services/healthService';
 
 const MEAL_OPTIONS = [
   { val: '早餐', icon: '🌅' },
@@ -48,49 +47,52 @@ Page({
   },
 
   onShow() {
-    this.loadToday();
+    this._loadToday();
     wx.nextTick(() => {
       const tabBar = this.getTabBar() as any;
       if (tabBar && tabBar.data.selected !== 2) tabBar.setData({ selected: 2 });
     });
   },
 
-  loadToday() {
-    const entries = getDietRecords(getTodayStr());
-    let cal = 0, prot = 0, carb = 0, fat = 0;
-    entries.forEach(e => {
-      cal += e.calories; prot += e.protein; carb += e.carbs; fat += e.fat;
-    });
-    cal = Math.round(cal);
-    prot = Math.round(prot * 10) / 10;
-    carb = Math.round(carb * 10) / 10;
-    fat = Math.round(fat * 10) / 10;
+  async _loadToday() {
+    try {
+      const entries = await dietService.getDietRecords(getTodayStr());
+      let cal = 0, prot = 0, carb = 0, fat = 0;
+      entries.forEach(e => {
+        cal += e.calories; prot += e.protein; carb += e.carbs; fat += e.fat;
+      });
+      cal = Math.round(cal);
+      prot = Math.round(prot * 10) / 10;
+      carb = Math.round(carb * 10) / 10;
+      fat = Math.round(fat * 10) / 10;
 
-    const caloriePct = Math.min(100, Math.round((cal / TARGET_CALORIES) * 100));
-    const proteinPct = Math.min(100, Math.round((prot / 60) * 100));
-    const carbsPct = Math.min(100, Math.round((carb / 250) * 100));
-    const fatPct = Math.min(100, Math.round((fat / 65) * 100));
+      const caloriePct = Math.min(100, Math.round((cal / TARGET_CALORIES) * 100));
+      const proteinPct = Math.min(100, Math.round((prot / 60) * 100));
+      const carbsPct = Math.min(100, Math.round((carb / 250) * 100));
+      const fatPct = Math.min(100, Math.round((fat / 65) * 100));
 
-    const meals = ['早餐', '午餐', '晚餐', '加餐'];
-    const mealIcons: Record<string, string> = { '早餐': '🌅', '午餐': '🌤️', '晚餐': '🌙', '加餐': '🍎' };
-    const mealGroups = meals.map(meal => ({
-      meal,
-      icon: mealIcons[meal],
-      entries: entries.filter(e => e.meal === meal),
-      totalCal: entries.filter(e => e.meal === meal).reduce((s, e) => s + e.calories, 0),
-    }));
+      const meals = ['早餐', '午餐', '晚餐', '加餐'];
+      const mealIcons: Record<string, string> = { '早餐': '🌅', '午餐': '🌤️', '晚餐': '🌙', '加餐': '🍎' };
+      const mealGroups = meals.map(meal => ({
+        meal,
+        icon: mealIcons[meal],
+        entries: entries.filter(e => e.meal === meal),
+        totalCal: entries.filter(e => e.meal === meal).reduce((s, e) => s + e.calories, 0),
+      }));
 
-    this.setData({
-      todayCalories: cal, todayProtein: prot, todayCarbs: carb, todayFat: fat,
-      caloriePct, proteinPct, carbsPct, fatPct,
-      todayEntries: entries, mealGroups,
-    });
+      this.setData({
+        todayCalories: cal, todayProtein: prot, todayCarbs: carb, todayFat: fat,
+        caloriePct, proteinPct, carbsPct, fatPct,
+        todayEntries: entries, mealGroups,
+      });
+    } catch (err) {
+      console.error('卡路里数据加载失败', err);
+    }
   },
 
-  // 分页：只把前 PAGE_SIZE 条塞进 data，其余存在实例变量
   _buildFilteredList() {
     const { keyword, selectedCat } = this.data;
-    let list = FOOD_DB;
+    let list = FOOD_DB as FoodItem[];
     if (keyword) {
       list = list.filter(f => f.name.includes(keyword));
     } else if (selectedCat !== '全部') {
@@ -140,7 +142,7 @@ Page({
       showModal: true,
       selectedFood: food,
       inputGrams: grams,
-      calcResult: calcNutrition(food, grams),
+      calcResult: dietService.calcNutrition(food, grams),
     });
   },
 
@@ -152,18 +154,17 @@ Page({
 
   gramChange(e: any) {
     const grams = e.detail.value;
-    this.setData({ inputGrams: grams, calcResult: calcNutrition(this.data.selectedFood, grams) });
+    this.setData({ inputGrams: grams, calcResult: dietService.calcNutrition(this.data.selectedFood, grams) });
   },
 
   setGram(e: any) {
     const grams = e.currentTarget.dataset.g;
-    this.setData({ inputGrams: grams, calcResult: calcNutrition(this.data.selectedFood, grams) });
+    this.setData({ inputGrams: grams, calcResult: dietService.calcNutrition(this.data.selectedFood, grams) });
   },
 
-  addToDay() {
+  async addToDay() {
     const { selectedFood, inputGrams, calcResult, currentMeal } = this.data;
-    const entry: DietEntry = {
-      id: Date.now(),
+    const entry = {
       date: getTodayStr(),
       foodId: selectedFood.id,
       foodName: selectedFood.name,
@@ -171,10 +172,14 @@ Page({
       meal: currentMeal,
       ...calcResult,
     };
-    addDietEntry(entry);
-    this.setData({ showModal: false });
-    this.loadToday();
-    wx.showToast({ title: '已添加', icon: 'success', duration: 1200 });
+    try {
+      await dietService.addDietEntry(entry);
+      this.setData({ showModal: false });
+      await this._loadToday();
+      wx.showToast({ title: '已添加', icon: 'success', duration: 1200 });
+    } catch (err) {
+      wx.showToast({ title: '添加失败', icon: 'error' });
+    }
   },
 
   deleteEntry(e: any) {
@@ -182,11 +187,15 @@ Page({
     wx.showModal({
       title: '删除记录',
       content: '确认删除这条饮食记录？',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          deleteDietEntry(id);
-          this.loadToday();
-          wx.showToast({ title: '已删除', icon: 'success' });
+          try {
+            await dietService.deleteDietEntry(id);
+            await this._loadToday();
+            wx.showToast({ title: '已删除', icon: 'success' });
+          } catch (err) {
+            wx.showToast({ title: '删除失败', icon: 'error' });
+          }
         }
       }
     });

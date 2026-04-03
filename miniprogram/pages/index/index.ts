@@ -1,4 +1,4 @@
-import { getRecords, getTodayStr, getTodayRecord, calcStreak, calcWeekCheckins, getRecentRecords } from '../../utils/storage';
+import * as healthService from '../../services/healthService';
 
 const WEEK_LABELS = ['一', '二', '三', '四', '五', '六', '日'];
 const TIPS = [
@@ -30,21 +30,18 @@ Page({
   },
 
   onLoad() {
-    // 静态数据只在加载时算一次
     const now = new Date();
     const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
     const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
     this.setData({
-      todayStr: getTodayStr(),
+      todayStr: healthService.getTodayStr(),
       weekDay: '周' + weekDays[now.getDay()],
       healthTip: TIPS[dayOfYear % TIPS.length],
     });
   },
 
   onShow() {
-    // onShow 只刷新动态数据，避免重算静态部分
     this._refreshData();
-    // tabBar 同步放到下一帧，不阻塞页面渲染
     wx.nextTick(() => {
       const tabBar = this.getTabBar() as any;
       if (tabBar && tabBar.data.selected !== 0) tabBar.setData({ selected: 0 });
@@ -55,49 +52,54 @@ Page({
     wx.switchTab({ url: '/pages/checkin/checkin' });
   },
 
-  _refreshData() {
-    const records = getRecords();
-    const now = new Date();
+  async _refreshData() {
+    try {
+      const records = await healthService.getRecords();
+      const now = new Date();
+      const todayStr = healthService.getTodayStr();
+      const todayRecord = records.find(r => r.date === todayStr) || null;
 
-    const todayRecord = getTodayRecord();
-    let todayBrief = '';
-    if (todayRecord) {
-      todayBrief = `体温 ${todayRecord.temp}°C · ${todayRecord.status} · 运动 ${todayRecord.exercise}分钟`;
+      let todayBrief = '';
+      if (todayRecord) {
+        todayBrief = `体温 ${todayRecord.temp}°C · ${todayRecord.status} · 运动 ${todayRecord.exercise}分钟`;
+      }
+
+      const totalDays = records.length;
+      const safeDays = records.filter(r => r.status === '健康').length;
+      const streak = healthService.calcStreak(records);
+
+      const weekRaw = healthService.calcWeekCheckins(records);
+      let weekChecked = 0;
+      const weekData = weekRaw.map((item, i) => {
+        const d = new Date(item.date);
+        const isPast = d <= now;
+        if (item.checked) weekChecked++;
+        return { label: WEEK_LABELS[i], checked: item.checked, isPast };
+      });
+      const weekPercent = Math.round((weekChecked / 7) * 100);
+
+      const recent = healthService.getRecentRecords(records, 7);
+      const chartData = recent.map(item => {
+        const shortDate = item.date.substring(5);
+        let percent = ((item.temp - 35) / 7) * 100;
+        percent = Math.min(Math.max(percent, 5), 100);
+        return { temp: item.temp, shortDate, heightPercent: percent + '%' };
+      });
+
+      this.setData({
+        streak,
+        checkedToday: !!todayRecord,
+        todayBrief,
+        totalDays,
+        safeDays,
+        warningDays: totalDays - safeDays,
+        weekData,
+        weekChecked,
+        weekPercent,
+        chartData,
+      });
+    } catch (err) {
+      console.error('首页数据加载失败', err);
     }
-
-    const totalDays = records.length;
-    const safeDays = records.filter(r => r.status === '健康').length;
-    const streak = calcStreak();
-
-    const weekRaw = calcWeekCheckins();
-    let weekChecked = 0;
-    const weekData = weekRaw.map((item, i) => {
-      const d = new Date(item.date);
-      const isPast = d <= now;
-      if (item.checked) weekChecked++;
-      return { label: WEEK_LABELS[i], checked: item.checked, isPast };
-    });
-    const weekPercent = Math.round((weekChecked / 7) * 100);
-
-    const recent = getRecentRecords(7);
-    const chartData = recent.map(item => {
-      const shortDate = item.date.substring(5);
-      let percent = ((item.temp - 35) / 7) * 100;
-      percent = Math.min(Math.max(percent, 5), 100);
-      return { temp: item.temp, shortDate, heightPercent: percent + '%' };
-    });
-
-    this.setData({
-      streak,
-      checkedToday: !!todayRecord,
-      todayBrief,
-      totalDays,
-      safeDays,
-      warningDays: totalDays - safeDays,
-      weekData,
-      weekChecked,
-      weekPercent,
-      chartData,
-    });
   },
 });

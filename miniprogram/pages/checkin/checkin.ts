@@ -1,4 +1,5 @@
-import { getTodayStr, getTodayRecord, upsertRecord, HealthRecord } from '../../utils/storage';
+import { HealthRecord } from '../../models/health';
+import * as healthService from '../../services/healthService';
 
 Page({
   data: {
@@ -32,22 +33,30 @@ Page({
       const tabBar = this.getTabBar() as any;
       if (tabBar && tabBar.data.selected !== 1) tabBar.setData({ selected: 1 });
     });
-    const today = getTodayStr();
-    const existing = getTodayRecord();
-    if (existing) {
-      this.setData({
-        todayStr: today,
-        isEdit: true,
-        temp: existing.temp,
-        status: existing.status,
-        exercise: existing.exercise != null ? existing.exercise : 0,
-        sleep: existing.sleep != null ? existing.sleep : 7,
-        water: existing.water != null ? existing.water : 8,
-        mood: existing.mood != null ? existing.mood : '😊',
-        note: existing.note != null ? existing.note : '',
-      });
-    } else {
-      this.setData({ todayStr: today, isEdit: false });
+    this._loadToday();
+  },
+
+  async _loadToday() {
+    try {
+      const today = healthService.getTodayStr();
+      const existing = await healthService.getTodayRecord();
+      if (existing) {
+        this.setData({
+          todayStr: today,
+          isEdit: true,
+          temp: existing.temp,
+          status: existing.status,
+          exercise: existing.exercise != null ? existing.exercise : 0,
+          sleep: existing.sleep != null ? existing.sleep : 7,
+          water: existing.water != null ? existing.water : 8,
+          mood: existing.mood != null ? existing.mood : '😊',
+          note: existing.note != null ? existing.note : '',
+        });
+      } else {
+        this.setData({ todayStr: today, isEdit: false });
+      }
+    } catch (err) {
+      console.error('打卡页数据加载失败', err);
     }
   },
 
@@ -60,11 +69,11 @@ Page({
   selectMood(e: any) { this.setData({ mood: e.currentTarget.dataset.val }); },
   setWater(e: any) { this.setData({ water: e.currentTarget.dataset.val }); },
 
-  submitData() {
+  async submitData() {
     const { temp, status, exercise, sleep, water, mood, note } = this.data;
     const now = new Date();
     const record: HealthRecord = {
-      date: getTodayStr(),
+      date: healthService.getTodayStr(),
       timestamp: now.getTime(),
       temp,
       status,
@@ -74,16 +83,19 @@ Page({
       mood,
       note,
     };
-    upsertRecord(record);
 
-    wx.showToast({
-      title: this.data.isEdit ? '已更新' : '打卡成功 🎉',
-      icon: 'success',
-      duration: 1500,
-    });
-
-    setTimeout(() => {
-      wx.switchTab({ url: '/pages/index/index' });
-    }, 1500);
+    try {
+      await healthService.upsertRecord(record);
+      wx.showToast({
+        title: this.data.isEdit ? '已更新' : '打卡成功',
+        icon: 'success',
+        duration: 1500,
+      });
+      setTimeout(() => {
+        wx.switchTab({ url: '/pages/index/index' });
+      }, 1500);
+    } catch (err) {
+      wx.showToast({ title: '保存失败', icon: 'error' });
+    }
   },
 });
