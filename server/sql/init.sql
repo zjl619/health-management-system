@@ -18,10 +18,10 @@ CREATE TABLE health_records (
     id        INT IDENTITY(1,1) PRIMARY KEY,
     date      NVARCHAR(10)   NOT NULL UNIQUE,
     timestamp BIGINT         NOT NULL,
-    temp      FLOAT          NOT NULL,
+    temp      DECIMAL(4,1)   NOT NULL,
     status    NVARCHAR(20)   NOT NULL,
     exercise  INT            NOT NULL DEFAULT 0,
-    sleep     FLOAT          NOT NULL DEFAULT 0,
+    sleep     DECIMAL(3,1)   NOT NULL DEFAULT 0,
     water     INT            NOT NULL DEFAULT 0,
     mood      NVARCHAR(10)   NOT NULL DEFAULT '',
     note      NVARCHAR(500)  NOT NULL DEFAULT ''
@@ -35,9 +35,9 @@ CREATE TABLE diet_entries (
     food_name NVARCHAR(50)   NOT NULL,
     grams     INT            NOT NULL,
     calories  INT            NOT NULL,
-    protein   FLOAT          NOT NULL,
-    carbs     FLOAT          NOT NULL,
-    fat       FLOAT          NOT NULL,
+    protein   DECIMAL(5,1)   NOT NULL,
+    carbs     DECIMAL(5,1)   NOT NULL,
+    fat       DECIMAL(5,1)   NOT NULL,
     meal      NVARCHAR(10)   NOT NULL
 );
 CREATE INDEX idx_diet_date ON diet_entries(date);
@@ -49,10 +49,10 @@ CREATE TABLE foods (
     category    NVARCHAR(20)   NOT NULL,
     unit        NVARCHAR(30)   NOT NULL,
     unit_weight INT            NOT NULL,
-    cal_per100  FLOAT          NOT NULL,
-    pro_per100  FLOAT          NOT NULL,
-    carb_per100 FLOAT          NOT NULL,
-    fat_per100  FLOAT          NOT NULL
+    cal_per100  DECIMAL(6,1)   NOT NULL,
+    pro_per100  DECIMAL(5,1)   NOT NULL,
+    carb_per100 DECIMAL(5,1)   NOT NULL,
+    fat_per100  DECIMAL(5,1)   NOT NULL
 );
 
 PRINT '建表完成！';
