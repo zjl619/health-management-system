@@ -1,76 +1,176 @@
-const sql = require('mssql');
+const fs = require('fs');
+const path = require('path');
+const initSqlJs = require('sql.js');
 
-// 支持环境变量覆盖，默认值用于本地开发
-const dbConfig = {
-  server: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'sa',
-  password: process.env.DB_PASS || '1324657980',
-  database: process.env.DB_NAME || 'HealthApp',
-  port: parseInt(process.env.DB_PORT || '1433', 10),
-  options: {
-    encrypt: false,
-    trustServerCertificate: true,
-  },
-  pool: {
-    max: 10,
-    min: 2,
-    idleTimeoutMillis: 30000,
-    acquireTimeoutMillis: 15000,
-  },
-  requestTimeout: 10000,
-  connectionTimeout: 10000,
-};
+const DATA_DIR = path.join(__dirname, '..', 'data');
+const DB_FILE = path.join(DATA_DIR, 'health-app.sqlite');
+const WASM_FILE = require.resolve('sql.js/dist/sql-wasm.wasm');
 
-let pool = null;
-let connecting = false;
+let SQL = null;
+let db = null;
+let initializing = null;
+
+async function loadSqlJs() {
+  if (SQL) {
+    return SQL;
+  }
+  SQL = await initSqlJs({
+    locateFile(file) {
+      if (file.endsWith('.wasm')) {
+        return WASM_FILE;
+      }
+      return file;
+    },
+  });
+  return SQL;
+}
+
+function ensureDataDir() {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+}
+
+function initSchema() {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      openid TEXT NOT NULL UNIQUE,
+      nickname TEXT NOT NULL DEFAULT '微信用户',
+      avatar TEXT NOT NULL DEFAULT '',
+      gender TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS health_records (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      date TEXT NOT NULL UNIQUE,
+      timestamp INTEGER NOT NULL,
+      temp REAL NOT NULL,
+      status TEXT NOT NULL,
+      exercise INTEGER NOT NULL DEFAULT 0,
+      sleep REAL NOT NULL DEFAULT 0,
+      water INTEGER NOT NULL DEFAULT 0,
+      mood TEXT NOT NULL DEFAULT '',
+      note TEXT NOT NULL DEFAULT ''
+    );
+
+    CREATE TABLE IF NOT EXISTS diet_entries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      date TEXT NOT NULL,
+      food_id INTEGER NOT NULL,
+      food_name TEXT NOT NULL,
+      grams INTEGER NOT NULL,
+      calories INTEGER NOT NULL,
+      protein REAL NOT NULL,
+      carbs REAL NOT NULL,
+      fat REAL NOT NULL,
+      meal TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_diet_date ON diet_entries(date);
+
+    CREATE TABLE IF NOT EXISTS foods (
+      id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      unit TEXT NOT NULL,
+      unit_weight INTEGER NOT NULL,
+      cal_per100 REAL NOT NULL,
+      pro_per100 REAL NOT NULL,
+      carb_per100 REAL NOT NULL,
+      fat_per100 REAL NOT NULL
+    );
+  `);
+}
+
+function persistDb() {
+  if (!db) {
+    return;
+  }
+  fs.writeFileSync(DB_FILE, Buffer.from(db.export()));
+}
 
 async function getPool() {
-  // 连接池存在且健康，直接返回
-  if (pool && pool.connected) {
-    return pool;
+  if (db) {
+    return db;
   }
 
-  // 防止并发重复创建
-  if (connecting) {
-    await _wait(200);
-    return getPool();
+  if (initializing) {
+    return initializing;
   }
 
-  connecting = true;
-  try {
-    // 如果旧连接池存在但已断开，先关闭
-    if (pool) {
-      try { await pool.close(); } catch (_) {}
-      pool = null;
+  initializing = (async () => {
+    ensureDataDir();
+    const SQLite = await loadSqlJs();
+    if (fs.existsSync(DB_FILE)) {
+      db = new SQLite.Database(fs.readFileSync(DB_FILE));
+    } else {
+      db = new SQLite.Database();
     }
-    pool = await sql.connect(dbConfig);
 
-    // 监听连接池错误，自动清除失效连接
-    pool.on('error', (err) => {
-      console.error('[DB] 连接池异常，将在下次请求时重连:', err.message);
-      pool = null;
-    });
+    db.run('PRAGMA foreign_keys = ON;');
+    initSchema();
+    persistDb();
+    console.log('[DB] SQLite 数据库已就绪');
+    return db;
+  })();
 
-    console.log('[DB] 数据库连接成功');
-    return pool;
-  } catch (err) {
-    pool = null;
-    throw err;
+  try {
+    return await initializing;
   } finally {
-    connecting = false;
+    initializing = null;
   }
 }
 
-function _wait(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+function bindStatement(stmt, params = []) {
+  if (Array.isArray(params)) {
+    stmt.bind(params);
+  } else {
+    stmt.bind(params);
+  }
 }
 
-// 优雅关闭
+async function run(sql, params = []) {
+  const dbInstance = await getPool();
+  try {
+    dbInstance.run(sql, params);
+    const changes = dbInstance.getRowsModified();
+    persistDb();
+    return { changes };
+  } catch (err) {
+    throw err;
+  }
+}
+
+async function all(sql, params = []) {
+  const dbInstance = await getPool();
+  const stmt = dbInstance.prepare(sql);
+  try {
+    bindStatement(stmt, params);
+    const rows = [];
+    while (stmt.step()) {
+      rows.push(stmt.getAsObject());
+    }
+    return rows;
+  } finally {
+    stmt.free();
+  }
+}
+
+async function get(sql, params = []) {
+  const rows = await all(sql, params);
+  return rows[0] || null;
+}
+
 async function closePool() {
-  if (pool) {
-    try { await pool.close(); } catch (_) {}
-    pool = null;
+  if (!db) {
+    return;
   }
+  persistDb();
+  db.close();
+  db = null;
 }
 
-module.exports = { sql, getPool, closePool };
+module.exports = { getPool, run, all, get, closePool };

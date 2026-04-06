@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { sql, getPool } = require('../config/db');
+const { all, run } = require('../config/db');
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 function isValidDate(str) {
@@ -22,11 +22,8 @@ router.get('/records/:date', async (req, res) => {
     if (!isValidDate(req.params.date)) {
       return res.status(400).json({ code: -1, msg: '日期格式错误' });
     }
-    const pool = await getPool();
-    const result = await pool.request()
-      .input('date', sql.NVarChar, req.params.date)
-      .query('SELECT * FROM diet_entries WHERE date = @date ORDER BY id ASC');
-    res.json({ code: 0, data: result.recordset });
+    const records = await all('SELECT * FROM diet_entries WHERE date = ? ORDER BY id ASC', [req.params.date]);
+    res.json({ code: 0, data: records });
   } catch (err) {
     errRes(res, err);
   }
@@ -53,19 +50,21 @@ router.post('/records', async (req, res) => {
     const safeCarbs = Math.max(0, Math.min(parseFloat(carbs) || 0, 500));
     const safeFat = Math.max(0, Math.min(parseFloat(fat) || 0, 500));
 
-    const pool = await getPool();
-    await pool.request()
-      .input('date', sql.NVarChar, date)
-      .input('foodId', sql.Int, parseInt(foodId) || 0)
-      .input('foodName', sql.NVarChar, foodName.substring(0, 50))
-      .input('grams', sql.Int, safeGrams)
-      .input('calories', sql.Int, safeCal)
-      .input('protein', sql.Decimal(5, 1), safePro)
-      .input('carbs', sql.Decimal(5, 1), safeCarbs)
-      .input('fat', sql.Decimal(5, 1), safeFat)
-      .input('meal', sql.NVarChar, meal)
-      .query(`INSERT INTO diet_entries (date, food_id, food_name, grams, calories, protein, carbs, fat, meal)
-              VALUES (@date, @foodId, @foodName, @grams, @calories, @protein, @carbs, @fat, @meal)`);
+    await run(
+      `INSERT INTO diet_entries (date, food_id, food_name, grams, calories, protein, carbs, fat, meal)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        date,
+        parseInt(foodId) || 0,
+        foodName.substring(0, 50),
+        safeGrams,
+        safeCal,
+        safePro,
+        safeCarbs,
+        safeFat,
+        meal,
+      ],
+    );
     res.json({ code: 0, msg: 'ok' });
   } catch (err) {
     errRes(res, err);
@@ -79,11 +78,8 @@ router.delete('/records/:id', async (req, res) => {
     if (isNaN(id) || id <= 0) {
       return res.status(400).json({ code: -1, msg: '无效的记录 ID' });
     }
-    const pool = await getPool();
-    const result = await pool.request()
-      .input('id', sql.Int, id)
-      .query('DELETE FROM diet_entries WHERE id = @id');
-    if (result.rowsAffected[0] === 0) {
+    const result = await run('DELETE FROM diet_entries WHERE id = ?', [id]);
+    if (result.changes === 0) {
       return res.status(404).json({ code: -1, msg: '记录不存在' });
     }
     res.json({ code: 0, msg: 'ok' });
@@ -95,9 +91,8 @@ router.delete('/records/:id', async (req, res) => {
 // 获取食物库
 router.get('/foods', async (req, res) => {
   try {
-    const pool = await getPool();
-    const result = await pool.request().query('SELECT * FROM foods ORDER BY id ASC');
-    res.json({ code: 0, data: result.recordset });
+    const foods = await all('SELECT * FROM foods ORDER BY id ASC');
+    res.json({ code: 0, data: foods });
   } catch (err) {
     errRes(res, err);
   }

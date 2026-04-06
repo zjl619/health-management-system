@@ -1,85 +1,149 @@
-# 健康打卡小程序
+# 健康管理小程序
 
-这是一个基于微信小程序的健康管理项目，围绕健康打卡、饮食记录、历史查询和统计分析展开。项目使用 TypeScript 编写业务逻辑，样式采用 SCSS，数据主要保存在小程序本地缓存中，适合课程实践、作品展示和原型演示。
+这是一个基于微信小程序的健康管理项目，包含健康打卡、饮食记录、历史查询、统计分析和用户资料维护。当前版本已完成前后端联通，后端默认使用本地 SQLite 文件存储。
 
-## 项目功能
+## 当前能力
 
-- 健康打卡：记录体温、运动、睡眠、饮水、心情和备注
-- 饮食管理：查询食物、计算营养、记录每日三餐与加餐
-- 历史记录：按月查看打卡历史，支持删除记录
-- 健康统计：展示健康评分、连续打卡、本周概览和个性化建议
-- 自定义界面：支持自定义底部 TabBar 和顶部导航栏
+- 健康打卡：新增、查询、删除健康记录
+- 饮食记录：按日查询、新增、删除饮食记录
+- 健康统计：摘要、趋势、心情分布
+- 用户模块：登录、查询个人资料、更新个人资料
+- 页面模块：首页、打卡、卡路里、历史、统计、个人资料
 
-## 项目结构
+## 当前架构
 
 ```text
 health-management-system/
-├─ miniprogram/
-│  ├─ app.ts
-│  ├─ app.json
-│  ├─ app.scss
-│  ├─ components/
-│  │  └─ navigation-bar/
-│  ├─ custom-tab-bar/
-│  ├─ pages/
-│  │  ├─ index/
-│  │  ├─ checkin/
-│  │  ├─ calorie/
-│  │  ├─ history/
-│  │  ├─ stats/
-│  │  └─ logs/
-│  ├─ utils/
-│  │  ├─ storage.ts
-│  │  ├─ foodData.ts
-│  │  └─ util.ts
-│  └─ sitemap.json
-├─ typings/
-│  ├─ index.d.ts
-│  └─ types/
+├─ .gitignore
 ├─ package.json
 ├─ tsconfig.json
+├─ project.config.json
+├─ project.private.config.json
+├─ miniprogram/
+│  ├─ api/                         接口请求层
+│  │  ├─ request.ts                请求封装（自动附带 Authorization）
+│  │  ├─ authApi.ts
+│  │  ├─ healthApi.ts
+│  │  ├─ dietApi.ts
+│  │  └─ statsApi.ts
+│  ├─ services/                    业务服务层
+│  │  ├─ authService.ts
+│  │  ├─ healthService.ts
+│  │  ├─ dietService.ts
+│  │  └─ statsService.ts
+│  ├─ models/                      前端类型定义
+│  │  ├─ user.ts
+│  │  ├─ health.ts
+│  │  └─ diet.ts
+│  ├─ pages/                       页面
+│  │  ├─ index/                    首页
+│  │  ├─ checkin/                  健康打卡页
+│  │  ├─ calorie/                  饮食记录页
+│  │  ├─ history/                  历史记录页
+│  │  ├─ stats/                    统计页
+│  │  └─ profile/                  个人资料页
+│  ├─ components/                  组件
+│  ├─ custom-tab-bar/              自定义 TabBar
+│  ├─ config/                      前端配置
+│  │  ├─ api.ts                    后端地址配置
+│  │  └─ food.ts                   内置食物库配置
+│  ├─ app.ts                       启动与默认登录
+│  └─ app.json                     页面与 TabBar 注册
+├─ docs/
+│  └─ DEVELOPMENT_UPDATE_LOG.md
+├─ server/
+│  ├─ app.js                       后端服务入口
+│  ├─ routes/                      路由层
+│  │  ├─ auth.js
+│  │  ├─ users.js
+│  │  ├─ health.js
+│  │  ├─ diet.js
+│  │  └─ stats.js
+│  ├─ middlewares/
+│  │  └─ auth.js                   鉴权中间件
+│  ├─ utils/
+│  │  └─ token.js                  Token 生成与校验
+│  ├─ config/
+│  │  └─ db.js                     SQLite 初始化与查询封装
+│  ├─ data/
+│  │  └─ health-app.sqlite         SQLite 数据文件
+│  └─ sql/                         SQLite 参考脚本
+│     ├─ init.sql
+│     ├─ upgrade_add_users.sql
+│     └─ upgrade_float_to_decimal.sql
+├─ typings/
 └─ README.md
 ```
 
-关键目录说明：
+前端调用链：pages -> services -> api -> backend
 
-- `miniprogram/pages/`：业务页面目录（首页、打卡、饮食、历史、统计等）
-- `miniprogram/components/navigation-bar/`：自定义顶部导航栏组件
-- `miniprogram/custom-tab-bar/`：自定义底部 TabBar
-- `miniprogram/utils/storage.ts`：本地缓存读写与健康数据统计
-- `miniprogram/utils/foodData.ts`：食物数据与营养计算逻辑
-- `typings/`：小程序 TypeScript 类型声明
+后端调用链：routes -> db(config/db.js) -> SQLite
 
 ## 技术栈
 
-- 微信小程序
-- TypeScript
-- SCSS
-- 小程序本地缓存 API
+- 微信小程序 + TypeScript + SCSS
+- Node.js + Express
+- SQLite（sql.js）
 
-## 运行说明
+## 快速启动
 
-1. 使用微信开发者工具打开本项目根目录。
-2. 导入项目后，确保小程序基础配置可用。
-3. 编译并预览即可运行。
+1. 安装 Node.js 18 及以上版本。
+2. 进入 server 目录并安装依赖。
+3. 启动后端服务。
+4. 用微信开发者工具打开项目根目录并编译小程序。
+
+示例命令：
+
+```powershell
+cd server
+npm install
+npm run dev
+```
+
+如果你的 PowerShell 阻止 npm.ps1，可改用：
+
+```powershell
+cd server
+D:\node.js\npm.cmd install
+D:\node.js\npm.cmd run dev
+```
+
+## 接口概览
+
+- 鉴权与用户
+	- POST /api/auth/login
+	- GET /api/users/me
+	- PUT /api/users/me
+- 健康记录
+	- GET /api/health/records
+	- GET /api/health/records/:date
+	- POST /api/health/records
+	- DELETE /api/health/records/:date
+	- GET /api/health/month/:year/:month
+- 饮食记录
+	- GET /api/diet/records/:date
+	- POST /api/diet/records
+	- DELETE /api/diet/records/:id
+	- GET /api/diet/foods
+- 统计
+	- GET /api/stats/summary
+	- GET /api/stats/trends
+	- GET /api/stats/mood-distribution
 
 ## 数据说明
 
-项目没有接入后端服务，所有健康记录和饮食记录默认保存在本地缓存中。关闭或卸载小程序后，本地数据可能会丢失，因此更适合作为单机版演示项目。
+- SQLite 文件路径：server/data/health-app.sqlite
+- 表结构由后端启动时自动初始化
+- server/sql/init.sql 与 server/sql/upgrade_add_users.sql 是 SQLite 参考脚本
 
-## 主要特点
+## 文档索引
 
-- 结构清晰，页面职责划分明确
-- 业务逻辑集中在 utils 层，便于维护
-- 功能闭环完整，能够覆盖健康管理的常见场景
-- 界面组件化，便于后续扩展
+- 本次改进记录：docs/DEVELOPMENT_UPDATE_LOG.md
 
-## 后续可扩展方向
+## 已知边界
 
-- 优化页面交互与视觉表现
-- 提升表单校验和输入体验
-- 为统计逻辑补充测试
-- 拆分更细的业务层与数据层
-- 增加数据导入导出能力
+- 当前为课程实践实现，登录使用本地 openid 方案，尚未接微信真实登录
+- 食物库仍以内置数据为主，后台维护能力可继续扩展
+- 同步冲突处理和自动化测试尚未完整覆盖
 
 

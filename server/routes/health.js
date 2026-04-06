@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { sql, getPool } = require('../config/db');
+const { all, get, run } = require('../config/db');
 
 // 日期格式校验
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -19,11 +19,8 @@ function errRes(res, err) {
 // 获取所有健康记录
 router.get('/records', async (req, res) => {
   try {
-    const pool = await getPool();
-    const result = await pool.request().query(
-      'SELECT * FROM health_records ORDER BY date ASC'
-    );
-    res.json({ code: 0, data: result.recordset });
+    const records = await all('SELECT * FROM health_records ORDER BY date ASC');
+    res.json({ code: 0, data: records });
   } catch (err) {
     errRes(res, err);
   }
@@ -35,11 +32,8 @@ router.get('/records/:date', async (req, res) => {
     if (!isValidDate(req.params.date)) {
       return res.status(400).json({ code: -1, msg: '日期格式错误，应为 YYYY-MM-DD' });
     }
-    const pool = await getPool();
-    const result = await pool.request()
-      .input('date', sql.NVarChar, req.params.date)
-      .query('SELECT * FROM health_records WHERE date = @date');
-    res.json({ code: 0, data: result.recordset[0] || null });
+    const record = await get('SELECT * FROM health_records WHERE date = ?', [req.params.date]);
+    res.json({ code: 0, data: record || null });
   } catch (err) {
     errRes(res, err);
   }
@@ -66,27 +60,29 @@ router.post('/records', async (req, res) => {
     const safeMood = (mood || '').substring(0, 10);
     const safeNote = (note || '').substring(0, 500);
 
-    const pool = await getPool();
-    await pool.request()
-      .input('date', sql.NVarChar, date)
-      .input('timestamp', sql.BigInt, timestamp || Date.now())
-      .input('temp', sql.Decimal(4, 1), temp)
-      .input('status', sql.NVarChar, status.substring(0, 20))
-      .input('exercise', sql.Int, safeExercise)
-      .input('sleep', sql.Decimal(3, 1), safeSleep)
-      .input('water', sql.Int, safeWater)
-      .input('mood', sql.NVarChar, safeMood)
-      .input('note', sql.NVarChar, safeNote)
-      .query(`
-        MERGE health_records AS target
-        USING (SELECT @date AS date) AS source ON target.date = source.date
-        WHEN MATCHED THEN
-          UPDATE SET timestamp=@timestamp, temp=@temp, status=@status,
-                     exercise=@exercise, sleep=@sleep, water=@water, mood=@mood, note=@note
-        WHEN NOT MATCHED THEN
-          INSERT (date, timestamp, temp, status, exercise, sleep, water, mood, note)
-          VALUES (@date, @timestamp, @temp, @status, @exercise, @sleep, @water, @mood, @note);
-      `);
+    await run(`
+      INSERT INTO health_records (date, timestamp, temp, status, exercise, sleep, water, mood, note)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(date) DO UPDATE SET
+        timestamp = excluded.timestamp,
+        temp = excluded.temp,
+        status = excluded.status,
+        exercise = excluded.exercise,
+        sleep = excluded.sleep,
+        water = excluded.water,
+        mood = excluded.mood,
+        note = excluded.note
+    `, [
+      date,
+      timestamp || Date.now(),
+      temp,
+      status.substring(0, 20),
+      safeExercise,
+      safeSleep,
+      safeWater,
+      safeMood,
+      safeNote,
+    ]);
     res.json({ code: 0, msg: 'ok' });
   } catch (err) {
     errRes(res, err);
@@ -99,11 +95,8 @@ router.delete('/records/:date', async (req, res) => {
     if (!isValidDate(req.params.date)) {
       return res.status(400).json({ code: -1, msg: '日期格式错误' });
     }
-    const pool = await getPool();
-    const result = await pool.request()
-      .input('date', sql.NVarChar, req.params.date)
-      .query('DELETE FROM health_records WHERE date = @date');
-    if (result.rowsAffected[0] === 0) {
+    const result = await run('DELETE FROM health_records WHERE date = ?', [req.params.date]);
+    if (result.changes === 0) {
       return res.status(404).json({ code: -1, msg: '记录不存在' });
     }
     res.json({ code: 0, msg: 'ok' });
@@ -121,11 +114,8 @@ router.get('/month/:year/:month', async (req, res) => {
       return res.status(400).json({ code: -1, msg: '年月参数错误' });
     }
     const prefix = `${year}-${month.toString().padStart(2, '0')}`;
-    const pool = await getPool();
-    const result = await pool.request()
-      .input('prefix', sql.NVarChar, prefix + '%')
-      .query('SELECT date, status FROM health_records WHERE date LIKE @prefix ORDER BY date ASC');
-    res.json({ code: 0, data: result.recordset });
+    const records = await all('SELECT date, status FROM health_records WHERE date LIKE ? ORDER BY date ASC', [`${prefix}%`]);
+    res.json({ code: 0, data: records });
   } catch (err) {
     errRes(res, err);
   }

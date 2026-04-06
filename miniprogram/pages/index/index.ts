@@ -1,4 +1,5 @@
 import * as healthService from '../../services/healthService';
+import * as authService from '../../services/authService';
 
 const WEEK_LABELS = ['一', '二', '三', '四', '五', '六', '日'];
 const TIPS = [
@@ -14,6 +15,7 @@ const TIPS = [
 Page({
   data: {
     userEmoji: '🧑',
+    userName: '健康达人',
     todayStr: '',
     weekDay: '',
     streak: 0,
@@ -41,6 +43,7 @@ Page({
   },
 
   onShow() {
+    this._refreshProfile();
     this._refreshData();
     wx.nextTick(() => {
       const tabBar = this.getTabBar() as any;
@@ -50,6 +53,25 @@ Page({
 
   goCheckin() {
     wx.switchTab({ url: '/pages/checkin/checkin' });
+  },
+
+  goProfile() {
+    wx.navigateTo({ url: '/pages/profile/profile' });
+  },
+
+  async _refreshProfile() {
+    try {
+      const local = authService.getLocalProfile();
+      if (local && local.nickname) {
+        this.setData({ userName: local.nickname });
+      }
+      const remote = await authService.fetchProfile();
+      if (remote && remote.nickname) {
+        this.setData({ userName: remote.nickname });
+      }
+    } catch (err) {
+      console.error('首页用户信息加载失败', err);
+    }
   },
 
   async _refreshData() {

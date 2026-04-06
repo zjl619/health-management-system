@@ -1,7 +1,10 @@
 const express = require('express');
 const cors = require('cors');
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
 const healthRoutes = require('./routes/health');
 const dietRoutes = require('./routes/diet');
+const statsRoutes = require('./routes/stats');
 const { closePool } = require('./config/db');
 
 const app = express();
@@ -17,15 +20,18 @@ app.use(cors({
       callback(null, true); // 小程序端实际无 origin，全部放行即可
     }
   },
-  methods: ['GET', 'POST', 'DELETE'],
-  allowedHeaders: ['Content-Type'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // 限制请求体大小
 app.use(express.json({ limit: '100kb' }));
 
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/diet', dietRoutes);
+app.use('/api/stats', statsRoutes);
 
 // 健康检查
 app.get('/api/ping', (req, res) => {

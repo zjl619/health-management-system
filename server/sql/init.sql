@@ -1,58 +1,57 @@
 -- ================================================
--- 健康打卡小程序 - 数据库初始化脚本
--- 使用方法：在 SSMS 中分两步执行
+-- 健康打卡小程序 - SQLite 初始化脚本
+-- 说明：当前后端会在启动时自动创建本地 SQLite 文件。
+-- 这个脚本仅用于手工查看或离线初始化参考。
 -- ================================================
 
--- ============================
--- 第一步：先选中下面这一行，单独执行
--- ============================
-CREATE DATABASE HealthApp;
+PRAGMA foreign_keys = ON;
 
--- ============================
--- 第二步：执行完上面后，选中下面全部内容执行
--- ============================
-USE HealthApp;
-
--- 健康打卡记录表
-CREATE TABLE health_records (
-    id        INT IDENTITY(1,1) PRIMARY KEY,
-    date      NVARCHAR(10)   NOT NULL UNIQUE,
-    timestamp BIGINT         NOT NULL,
-    temp      DECIMAL(4,1)   NOT NULL,
-    status    NVARCHAR(20)   NOT NULL,
-    exercise  INT            NOT NULL DEFAULT 0,
-    sleep     DECIMAL(3,1)   NOT NULL DEFAULT 0,
-    water     INT            NOT NULL DEFAULT 0,
-    mood      NVARCHAR(10)   NOT NULL DEFAULT '',
-    note      NVARCHAR(500)  NOT NULL DEFAULT ''
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  openid TEXT NOT NULL UNIQUE,
+  nickname TEXT NOT NULL DEFAULT '微信用户',
+  avatar TEXT NOT NULL DEFAULT '',
+  gender TEXT NOT NULL DEFAULT '',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- 饮食记录表
-CREATE TABLE diet_entries (
-    id        INT IDENTITY(1,1) PRIMARY KEY,
-    date      NVARCHAR(10)   NOT NULL,
-    food_id   INT            NOT NULL,
-    food_name NVARCHAR(50)   NOT NULL,
-    grams     INT            NOT NULL,
-    calories  INT            NOT NULL,
-    protein   DECIMAL(5,1)   NOT NULL,
-    carbs     DECIMAL(5,1)   NOT NULL,
-    fat       DECIMAL(5,1)   NOT NULL,
-    meal      NVARCHAR(10)   NOT NULL
-);
-CREATE INDEX idx_diet_date ON diet_entries(date);
-
--- 食物库表（可选，当前食物数据内置在前端）
-CREATE TABLE foods (
-    id          INT PRIMARY KEY,
-    name        NVARCHAR(50)   NOT NULL,
-    category    NVARCHAR(20)   NOT NULL,
-    unit        NVARCHAR(30)   NOT NULL,
-    unit_weight INT            NOT NULL,
-    cal_per100  DECIMAL(6,1)   NOT NULL,
-    pro_per100  DECIMAL(5,1)   NOT NULL,
-    carb_per100 DECIMAL(5,1)   NOT NULL,
-    fat_per100  DECIMAL(5,1)   NOT NULL
+CREATE TABLE IF NOT EXISTS health_records (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  date TEXT NOT NULL UNIQUE,
+  timestamp INTEGER NOT NULL,
+  temp REAL NOT NULL,
+  status TEXT NOT NULL,
+  exercise INTEGER NOT NULL DEFAULT 0,
+  sleep REAL NOT NULL DEFAULT 0,
+  water INTEGER NOT NULL DEFAULT 0,
+  mood TEXT NOT NULL DEFAULT '',
+  note TEXT NOT NULL DEFAULT ''
 );
 
-PRINT '建表完成！';
+CREATE TABLE IF NOT EXISTS diet_entries (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  date TEXT NOT NULL,
+  food_id INTEGER NOT NULL,
+  food_name TEXT NOT NULL,
+  grams INTEGER NOT NULL,
+  calories INTEGER NOT NULL,
+  protein REAL NOT NULL,
+  carbs REAL NOT NULL,
+  fat REAL NOT NULL,
+  meal TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_diet_date ON diet_entries(date);
+
+CREATE TABLE IF NOT EXISTS foods (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  unit TEXT NOT NULL,
+  unit_weight INTEGER NOT NULL,
+  cal_per100 REAL NOT NULL,
+  pro_per100 REAL NOT NULL,
+  carb_per100 REAL NOT NULL,
+  fat_per100 REAL NOT NULL
+);

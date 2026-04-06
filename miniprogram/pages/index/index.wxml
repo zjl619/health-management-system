@@ -3,10 +3,10 @@
   <!-- 顶部 Banner -->
   <view class="banner">
     <view class="banner-top">
-      <view class="user-info">
+      <view class="user-info" bindtap="goProfile">
         <view class="avatar">{{userEmoji}}</view>
         <view class="user-text">
-          <text class="user-name">健康达人</text>
+          <text class="user-name">{{userName}}</text>
           <text class="user-sub">{{todayStr}} · {{weekDay}}</text>
         </view>
       </view>

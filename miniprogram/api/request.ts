@@ -6,14 +6,25 @@ interface ApiResponse<T = any> {
   msg?: string;
 }
 
-function request<T>(method: 'GET' | 'POST' | 'DELETE', path: string, data?: any): Promise<T> {
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
+function request<T>(method: HttpMethod, path: string, data?: any, extraHeaders?: Record<string, string>): Promise<T> {
+  const header: Record<string, string> = {
+    'content-type': 'application/json',
+    ...(extraHeaders || {}),
+  };
+  const token = wx.getStorageSync('AUTH_TOKEN') as string;
+  if (token && !header.Authorization) {
+    header.Authorization = `Bearer ${token}`;
+  }
+
   return new Promise((resolve, reject) => {
     wx.request({
       url: `${BASE_URL}${path}`,
       method,
       data,
       timeout: REQUEST_TIMEOUT,
-      header: { 'content-type': 'application/json' },
+      header,
       success(res) {
         // HTTP 状态码非 2xx
         if (res.statusCode < 200 || res.statusCode >= 300) {
@@ -46,6 +57,10 @@ export function get<T>(path: string): Promise<T> {
 
 export function post<T>(path: string, data: any): Promise<T> {
   return request<T>('POST', path, data);
+}
+
+export function put<T>(path: string, data: any): Promise<T> {
+  return request<T>('PUT', path, data);
 }
 
 export function del<T>(path: string): Promise<T> {
